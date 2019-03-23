@@ -314,6 +314,7 @@ void MainWindow::on_write_song_clicked()
 	settings.setValue("prev_save_path", fpath);
 
 	QFile fout;
+	fout.setFileName(fpath);
 	if (fout.open(QIODevice::WriteOnly) == false) {
 		qDebug() << "Failed saving to file: " << fpath;
 		return;
@@ -329,9 +330,14 @@ void MainWindow::on_write_song_clicked()
 	char* fm_table_data = new char[voice_table_size];
 	memset(fm_table_data, 0, voice_table_size);
 
+	int fm_count = 0;
 	for (int i = 0; i < FM_VOICES; i++) {
-		char* ptr = &fm_table_data[i * voice_size];
 		Smps_voice& v = voices[i];
+		if (v.enabled == false)
+			continue;
+
+		char* ptr = &fm_table_data[fm_count * voice_size];
+		fm_count++;
 
 		// $0: --XXXYYY where
 		//	XXX is feedback
