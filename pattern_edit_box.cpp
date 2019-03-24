@@ -49,7 +49,5 @@ std::vector<uint8_t> PatternEditBox::getBytes() {
 
 void PatternEditBox::addPattern(std::vector<std::vector<uint8_t> >& patterns) {
 	std::vector<uint8_t> data = getBytes();
-	if (data.size() == 0)
-		return;
 	patterns.push_back(data);
 }

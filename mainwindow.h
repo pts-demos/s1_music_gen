@@ -42,6 +42,7 @@ public:
 
 	// turns the data into big endian if the host uses little endian
 	void toBigEndian(int16_t* data);
+	void toBigEndian(uint16_t* data);
 
 	QString byteToHex(uint8_t);
 

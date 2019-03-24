@@ -56,6 +56,15 @@ void MainWindow::toBigEndian(int16_t* data) {
 	}
 }
 
+void MainWindow::toBigEndian(uint16_t* data) {
+	// cast to int32 to avoid left shifting unsigned ints
+	int32_t temp = *data;
+	if (endianess == LittleEndian) {
+		int32_t temp2 = (temp >> 8) | (temp << 8);
+		*data = (uint16_t)temp2;
+	}
+}
+
 QString MainWindow::byteToHex(uint8_t t) {
 	QByteArray arr;
 	arr.append(t);
@@ -364,7 +373,6 @@ void MainWindow::on_write_song_clicked()
 	ui->psg_channel_1->addPattern(psg_patterns);
 	ui->psg_channel_2->addPattern(psg_patterns);
 	ui->psg_channel_3->addPattern(psg_patterns);
-	ui->psg_channel_4->addPattern(psg_patterns);
 
 	if (fm_patterns.size() == 0 || psg_patterns.size() == 0) {
 		qDebug() << "Need at least one FM and PSG pattern";
@@ -387,21 +395,21 @@ void MainWindow::on_write_song_clicked()
 	}
 
 	// $0-$1: Voice table pointer, offset to where the FM synthesis data is located
-	// TODO: DAC channels
 
 	unsigned int headers_size = smps_header_size +
-			fm_patterns.size()*fm_channel_header_size +
-			psg_patterns.size()*psg_header_size;
+		fm_patterns.size()*fm_channel_header_size +
+		psg_patterns.size()*psg_header_size;
 
-	int16_t vac_t_offset = headers_size + patterns_length;
+	uint16_t vac_t_offset = headers_size + patterns_length;
 	toBigEndian(&vac_t_offset);
-	int16_t* smps_ptr_1 = (int16_t*)smps_header;
+	uint16_t* smps_ptr_1 = (uint16_t*)smps_header;
 	smps_ptr_1[0] = vac_t_offset;
 
 	// Number of FM+DAC channels. There must always be a DAC channel defined
 	// Megadrive supports 6 FM+1DAC channels. If 6 FM channels are used,
 	// write 7 in this field
-	smps_header[2] = (uint8_t)(fm_patterns.size()+1);
+	// TODO: eh... verify what this means
+	smps_header[2] = (uint8_t)(fm_patterns.size());
 
 	// Number of PSG tracks
 	smps_header[3] = (uint8_t)psg_patterns.size();
@@ -440,10 +448,10 @@ void MainWindow::on_write_song_clicked()
 		char* off_p = &fm_headers[i * fm_channel_header_size];
 
 		// Track data pointer
-		int16_t* write_track_data_addr = (int16_t*)&fm_headers[i * fm_channel_header_size];
+		uint16_t* write_track_data_addr = (uint16_t*)&fm_headers[i * fm_channel_header_size];
 
 		// Pattern data begins when all headers and previous patterns are done
-		int16_t track_data_ptr = headers_size + pattern_offset;
+		uint16_t track_data_ptr = headers_size + pattern_offset;
 		toBigEndian(&track_data_ptr);
 		write_track_data_addr[0] = track_data_ptr;
 		pattern_offset += fm_patterns[i].size();
@@ -454,10 +462,10 @@ void MainWindow::on_write_song_clicked()
 		 * to a frequency. Sonic 3 or K specific: In the alternate SMPS parsing mode, the channel key displacement is
 		 * added to the *frequency* instead.
 		 */
-		off_p[1] = 0;
+		off_p[2] = 0;
 
 		// Initial track volume. 0 is max, 7F is total silence.
-		off_p[2] = 0;
+		off_p[3] = 0;
 	}
 
 	fout.write(fm_headers, fm_channel_header_size * fm_patterns.size());
@@ -469,9 +477,9 @@ void MainWindow::on_write_song_clicked()
 
 	for (unsigned int i = 0; i < psg_patterns.size(); i++) {
 		char* psg_ptr = &psg_headers[i * psg_header_size];
-		int16_t* track_d_ptr = (int16_t*)&psg_headers[i * psg_header_size];
+		uint16_t* track_d_ptr = (uint16_t*)&psg_headers[i * psg_header_size];
 
-		int16_t track_d_ptr_val = headers_size + pattern_offset;
+		uint16_t track_d_ptr_val = headers_size + pattern_offset;
 		toBigEndian(&track_d_ptr_val);
 		track_d_ptr[0] = track_d_ptr_val;
 		pattern_offset += psg_patterns[i].size();
@@ -608,7 +616,6 @@ void MainWindow::on_import_button_clicked()
 	ui->psg_channel_1->clear();
 	ui->psg_channel_2->clear();
 	ui->psg_channel_3->clear();
-	ui->psg_channel_4->clear();
 
 	QFile f;
 	f.setFileName(fpath);
@@ -620,7 +627,7 @@ void MainWindow::on_import_button_clicked()
 
 	char* rawbuf = arr.data();
 
-	int16_t fm_voice_array_ptr = 0;
+	uint16_t fm_voice_array_ptr = 0;
 	memcpy((char*)&fm_voice_array_ptr, rawbuf, sizeof(uint16_t));
 	toHostEndian(&fm_voice_array_ptr);
 
@@ -773,7 +780,6 @@ void MainWindow::on_import_button_clicked()
 			case 0: target = ui->psg_channel_1; break;
 			case 1: target = ui->psg_channel_2; break;
 			case 2: target = ui->psg_channel_3; break;
-			case 3: target = ui->psg_channel_4; break;
 			}
 		}
 

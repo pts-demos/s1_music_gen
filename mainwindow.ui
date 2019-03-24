@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1058</width>
-    <height>710</height>
+    <width>1046</width>
+    <height>615</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="voices">
      <attribute name="title">
@@ -88,7 +88,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Write</string>
+        <string>Save</string>
        </property>
       </widget>
       <widget class="QPushButton" name="import_button">
@@ -101,7 +101,7 @@
         </rect>
        </property>
        <property name="text">
-        <string>Import</string>
+        <string>Load</string>
        </property>
       </widget>
      </widget>
@@ -1059,72 +1059,13 @@
        <item row="1" column="0">
         <widget class="PatternEditBox" name="fm_channel_1"/>
        </item>
-       <item row="1" column="8">
-        <widget class="PatternEditBox" name="psg_channel_3"/>
-       </item>
-       <item row="1" column="1">
-        <widget class="PatternEditBox" name="fm_channel_2"/>
-       </item>
-       <item row="1" column="3">
-        <widget class="PatternEditBox" name="fm_channel_4"/>
-       </item>
        <item row="1" column="7">
         <widget class="PatternEditBox" name="psg_channel_2"/>
-       </item>
-       <item row="1" column="9">
-        <widget class="PatternEditBox" name="psg_channel_4"/>
-       </item>
-       <item row="1" column="5">
-        <widget class="PatternEditBox" name="fm_channel_6"/>
-       </item>
-       <item row="1" column="2">
-        <widget class="PatternEditBox" name="fm_channel_3"/>
-       </item>
-       <item row="1" column="4">
-        <widget class="PatternEditBox" name="fm_channel_5"/>
-       </item>
-       <item row="1" column="6">
-        <widget class="PatternEditBox" name="psg_channel_1"/>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_26">
-         <property name="text">
-          <string>FM1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_27">
-         <property name="text">
-          <string>FM2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_28">
-         <property name="text">
-          <string>FM3</string>
-         </property>
-        </widget>
        </item>
        <item row="0" column="3">
         <widget class="QLabel" name="label_29">
          <property name="text">
           <string>FM4</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QLabel" name="label_30">
-         <property name="text">
-          <string>FM5</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="5">
-        <widget class="QLabel" name="label_31">
-         <property name="text">
-          <string>FM6</string>
          </property>
         </widget>
        </item>
@@ -1135,12 +1076,11 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="7">
-        <widget class="QLabel" name="label_33">
-         <property name="text">
-          <string>PSG2</string>
-         </property>
-        </widget>
+       <item row="1" column="1">
+        <widget class="PatternEditBox" name="fm_channel_2"/>
+       </item>
+       <item row="1" column="8">
+        <widget class="PatternEditBox" name="psg_channel_3"/>
        </item>
        <item row="0" column="8">
         <widget class="QLabel" name="label_34">
@@ -1149,12 +1089,62 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="9">
-        <widget class="QLabel" name="label_35">
+       <item row="1" column="4">
+        <widget class="PatternEditBox" name="fm_channel_5"/>
+       </item>
+       <item row="1" column="6">
+        <widget class="PatternEditBox" name="psg_channel_1"/>
+       </item>
+       <item row="0" column="7">
+        <widget class="QLabel" name="label_33">
          <property name="text">
-          <string>PSG4</string>
+          <string>PSG2</string>
          </property>
         </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>FM5</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="PatternEditBox" name="fm_channel_3"/>
+       </item>
+       <item row="1" column="5">
+        <widget class="PatternEditBox" name="fm_channel_6"/>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>FM3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QLabel" name="label_31">
+         <property name="text">
+          <string>FM6</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>FM2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_26">
+         <property name="text">
+          <string>FM1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="PatternEditBox" name="fm_channel_4"/>
        </item>
       </layout>
      </widget>
@@ -1166,7 +1156,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1058</width>
+     <width>1046</width>
      <height>21</height>
     </rect>
    </property>
