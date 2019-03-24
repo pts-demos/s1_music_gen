@@ -17,8 +17,8 @@ class MainWindow;
 
 typedef struct {
 	VoiceType voice_type;
-	int16_t pattern_offset;
-	int16_t pattern_size;
+	uint16_t pattern_offset;
+	uint16_t pattern_size;
 	int8_t pattern_number;
 	int8_t initial_channel_key_displacement;
 	int8_t initial_channel_volume;
@@ -38,11 +38,12 @@ public:
 	// Switches the endianess of the given int16_t if the host
 	// system does not use big endian
 	void toHostEndian(int16_t* data);
+	void toHostEndian(uint16_t* data);
 
 	// turns the data into big endian if the host uses little endian
 	void toBigEndian(int16_t* data);
 
-	QChar byteToHex(uint8_t);
+	QString byteToHex(uint8_t);
 
 private:
 	Smps_voice voices[FM_VOICES];

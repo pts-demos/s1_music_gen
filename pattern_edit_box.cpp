@@ -26,7 +26,6 @@ void PatternEditBox::handleTextChanged()
 	}
 
 	if (text.compare(modded_text) != 0) {
-		qDebug() << "modded_text: " << modded_text;
 		setText(modded_text);
 	}
 }

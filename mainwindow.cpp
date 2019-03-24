@@ -40,6 +40,15 @@ void MainWindow::toHostEndian(int16_t* data) {
 	}
 }
 
+void MainWindow::toHostEndian(uint16_t* data) {
+	// Cast to int32 to avoid left shifting unsigned ints
+	int32_t temp = *data;
+	if (endianess == LittleEndian) {
+		int32_t temp2 = (temp >> 8) | ( temp << 8);
+		*data = (uint16_t)temp2;
+	}
+}
+
 void MainWindow::toBigEndian(int16_t* data) {
 	if (endianess == LittleEndian) {
 		int16_t x = (*data >> 8) | ( *data << 8);
@@ -47,10 +56,10 @@ void MainWindow::toBigEndian(int16_t* data) {
 	}
 }
 
-QChar MainWindow::byteToHex(uint8_t t) {
+QString MainWindow::byteToHex(uint8_t t) {
 	QByteArray arr;
 	arr.append(t);
-	return QString(arr.toHex())[0];
+	return arr.toHex();
 }
 
 void MainWindow::update_ui_controls() {
@@ -623,15 +632,17 @@ void MainWindow::on_import_button_clicked()
 	memcpy(&num_of_fm_channels, &rawbuf[2], sizeof(uint8_t));
 	memcpy(&num_of_psg_channels, &rawbuf[3], sizeof(uint8_t));
 
+	// There are number+1 FM channels because there must always be a DAC channel
+	// TODO: What does the wiki mean by this? Is the DAC channel not in the file,
+	// but it must be included in the total number?
+
 	qDebug() << "fm channels: " << num_of_fm_channels << ", psg channels: " << num_of_psg_channels;
 
 	uint8_t dividing_timing = 0;
 	uint8_t main_tempo = 0;
-	uint16_t tempo_timings = 0;
 
-	memcpy((char*)&tempo_timings, &rawbuf[4], sizeof(uint16_t));
-	dividing_timing = tempo_timings >> 4;
-	main_tempo = tempo_timings & 0x00FF;
+	memcpy(&dividing_timing, &rawbuf[4], sizeof(uint8_t));
+	memcpy(&main_tempo, &rawbuf[5], sizeof(uint8_t));
 
 	qDebug() << "dividing timing: " << dividing_timing << ", main tempo: " << main_tempo;
 
@@ -642,21 +653,22 @@ void MainWindow::on_import_button_clicked()
 		PatternHeader pattern_header;
 		memset(&pattern_header, 0, sizeof(pattern_header));
 
-		int16_t pattern_data_ptr = 0;
-		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(int16_t));
+		uint16_t pattern_data_ptr = 0;
+		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(uint16_t));
 		toHostEndian(&pattern_data_ptr);
 		pattern_header.pattern_offset = pattern_data_ptr;
 		pattern_header.pattern_number = i;
+		qDebug() << "FM channel " << i << " offset: " << pattern_header.pattern_offset;
 
 		bool is_dac = false;
 
 		if (i == 0) {
-			// First FM channel can be a DAC channel
+			// First FM channel can be a DAC channel if the next two bytes are zero
 			int16_t maybe_dac = 0;
 			memcpy((char*)&maybe_dac, &rawbuf[offset + 3], sizeof(int16_t));
 			toHostEndian(&maybe_dac);
 			if (maybe_dac == 0) {
-				qDebug() << "FM channel 1 is used as DAC";
+				qDebug() << "FM channel 0 is used as DAC";
 				is_dac = true;
 			}
 		}
@@ -677,18 +689,23 @@ void MainWindow::on_import_button_clicked()
 		PatternHeader pattern_header;
 		memset(&pattern_header, 0, sizeof(pattern_header));
 
-		int16_t pattern_data_ptr = 0;
-		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(int16_t));
+		uint16_t pattern_data_ptr = 0;
+		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(uint16_t));
 		toHostEndian(&pattern_data_ptr);
+
 		pattern_header.pattern_offset = pattern_data_ptr;
 		pattern_header.voice_type = SMPS_PSG;
-		pattern_header.pattern_number = num_of_psg_channels;
+		pattern_header.pattern_number = i;
 
-		memcpy((char*)&pattern_header.unknown, &rawbuf[offset + 3], sizeof(int8_t));
-		memcpy((char*)&pattern_header.initial_voice_num, &rawbuf[offset + 4], sizeof(int8_t));
+		qDebug() << "PSG channel " << i << " offset: " << pattern_header.pattern_offset;
+
+		memcpy((char*)&pattern_header.initial_channel_key_displacement, &rawbuf[offset + 2], sizeof(uint8_t));
+		memcpy((char*)&pattern_header.initial_channel_volume, &rawbuf[offset + 3], sizeof(uint8_t));
+		memcpy((char*)&pattern_header.unknown, &rawbuf[offset + 4], sizeof(int8_t));
+		memcpy((char*)&pattern_header.initial_voice_num, &rawbuf[offset + 5], sizeof(int8_t));
 
 		pattern_headers.push_back(pattern_header);
-		offset += 4;
+		offset += 6;
 	}
 
 	// Solve the size of each pattern by figuring out when next pattern begins
@@ -702,8 +719,29 @@ void MainWindow::on_import_button_clicked()
 		pattern_headers[i].pattern_size = pattern_headers[i+1].pattern_offset - pattern_headers[i].pattern_offset;
 	}
 
+	// Sort the patterns back to original order
+	// Not necessary, but makes debugging easier
+	std::sort(pattern_headers.begin(), pattern_headers.end(),
+		[&](const PatternHeader& a, const PatternHeader& b) {
+
+			// Sort FM patterns before PSG channels
+			int temp_a = a.pattern_number;
+			int temp_b = b.pattern_number;
+			if (a.voice_type == SMPS_PSG) temp_a += 10;
+			if (b.voice_type == SMPS_PSG) temp_b += 10;
+
+			return temp_a < temp_b;
+		}
+	);
+
+	qDebug() << "There are a total of " << pattern_headers.size() << " pattern headers";
+
+	for (int i = 0; i < pattern_headers.size(); i++) {
+		QString chantype = pattern_headers[i].voice_type == SMPS_PSG ? "PSG" : "FM or DAC";
+		qDebug() << "pattern header " << i << " type: " << chantype << ", offset: " << pattern_headers[i].pattern_offset << " length: " << pattern_headers[i].pattern_size;
+	}
+
 	// last pattern size can be solved by seeing when fm_voice_array_ptr begins
-	// TODO: fuck, are the offsets relative to the beginning of the file or the pointer itself?
 	pattern_headers[pattern_headers.size()-1].pattern_size = fm_voice_array_ptr - pattern_headers[pattern_headers.size()-1].pattern_offset;
 
 	// read pattern data
@@ -712,12 +750,12 @@ void MainWindow::on_import_button_clicked()
 		PatternHeader& p = pattern_headers[i];
 
 		QString pattern_text = "";
+		qDebug() << "Reading pattern of size: " << p.pattern_size << " at offset " << p.pattern_offset;
+
 		for (int c = 0; c < p.pattern_size; c++) {
-			uint8_t hex = rawbuf[offset + c];
+			uint8_t hex = rawbuf[p.pattern_offset + c];
 			pattern_text += byteToHex(hex);
-			if (c != 0 && c % 2 == 0) {
-				pattern_text += " ";
-			}
+			pattern_text += " ";
 		}
 
 		PatternEditBox* target = NULL;
@@ -748,5 +786,153 @@ void MainWindow::on_import_button_clicked()
 		offset += pattern_headers[i].pattern_size;
 	}
 
-	// read FM and PSG voice data
+	// read FM voice table data
+	const int voice_size = 25;
+
+	for (int i = 0; i < FM_VOICES; i++) {
+		uint8_t b1 = (uint8_t)rawbuf[fm_voice_array_ptr + (i*voice_size)];
+
+		// 00111000
+		uint8_t feedback = 0x38 & b1;
+
+		// 00000111
+		uint8_t algorithm = 0x07 & b1;
+
+		uint8_t b2 = (uint8_t)rawbuf[fm_voice_array_ptr + 1];
+		uint8_t b3 = (uint8_t)rawbuf[fm_voice_array_ptr + 2];
+		uint8_t b4 = (uint8_t)rawbuf[fm_voice_array_ptr + 3];
+		uint8_t b5 = (uint8_t)rawbuf[fm_voice_array_ptr + 4];
+
+		// 01110000
+		uint8_t op1_detune = 0x70 & b2;
+		uint8_t op3_detune = 0x70 & b3;
+		uint8_t op2_detune = 0x70 & b4;
+		uint8_t op4_detune = 0x70 & b5;
+
+		// 00001111
+		uint8_t op1_mult = 0x0F & b2;
+		uint8_t op3_mult = 0x0F & b3;
+		uint8_t op2_mult = 0x0F & b4;
+		uint8_t op4_mult = 0x0F & b5;
+
+		uint8_t b6 = (uint8_t)rawbuf[fm_voice_array_ptr + 5];
+		uint8_t b7 = (uint8_t)rawbuf[fm_voice_array_ptr + 6];
+		uint8_t b8 = (uint8_t)rawbuf[fm_voice_array_ptr + 7];
+		uint8_t b9 = (uint8_t)rawbuf[fm_voice_array_ptr + 8];
+
+		// 11000000
+		uint8_t rate_scale_op1 = 0xC0 & b6;
+		uint8_t rate_scale_op2 = 0xC0 & b7;
+		uint8_t rate_scale_op3 = 0xC0 & b8;
+		uint8_t rate_scale_op4 = 0xC0 & b9;
+
+		// 00011111
+		uint8_t attack_rate_op1 = 0x1F & b6;
+		uint8_t attack_rate_op2 = 0x1F & b7;
+		uint8_t attack_rate_op3 = 0x1F & b8;
+		uint8_t attack_rate_op4 = 0x1F & b9;
+
+		uint8_t b10 = (uint8_t)rawbuf[fm_voice_array_ptr + 9];
+		uint8_t b11 = (uint8_t)rawbuf[fm_voice_array_ptr + 10];
+		uint8_t b12 = (uint8_t)rawbuf[fm_voice_array_ptr + 11];
+		uint8_t b13 = (uint8_t)rawbuf[fm_voice_array_ptr + 12];
+
+		// 10000000
+		uint8_t lfo_enabled_op_1 = 0x80 & b10;
+		uint8_t lfo_enabled_op_2 = 0x80 & b11;
+		uint8_t lfo_enabled_op_3 = 0x80 & b12;
+		uint8_t lfo_enabled_op_4 = 0x80 & b13;
+
+		// 00011111
+		uint8_t first_decay_rate_op_1 = 0x1F & b10;
+		uint8_t first_decay_rate_op_2 = 0x1F & b11;
+		uint8_t first_decay_rate_op_3 = 0x1F & b12;
+		uint8_t first_decay_rate_op_4 = 0x1F & b13;
+
+		uint8_t b14 = (uint8_t)rawbuf[fm_voice_array_ptr + 13];
+		uint8_t b15 = (uint8_t)rawbuf[fm_voice_array_ptr + 14];
+		uint8_t b16 = (uint8_t)rawbuf[fm_voice_array_ptr + 15];
+		uint8_t b17 = (uint8_t)rawbuf[fm_voice_array_ptr + 16];
+
+		// 00011111
+		uint8_t second_decay_rate_op1 = b14 & 0x1F;
+		uint8_t second_decay_rate_op2 = b15 & 0x1F;
+		uint8_t second_decay_rate_op3 = b16 & 0x1F;
+		uint8_t second_decay_rate_op4 = b17 & 0x1F;
+
+		uint8_t b18 = (uint8_t)rawbuf[fm_voice_array_ptr + 17];
+		uint8_t b19 = (uint8_t)rawbuf[fm_voice_array_ptr + 18];
+		uint8_t b20 = (uint8_t)rawbuf[fm_voice_array_ptr + 19];
+		uint8_t b21 = (uint8_t)rawbuf[fm_voice_array_ptr + 20];
+
+		// 1111000
+		uint8_t first_decay_level_op1 = 0x1F & b18;
+		uint8_t first_decay_level_op2 = 0x1F & b19;
+		uint8_t first_decay_level_op3 = 0x1F & b20;
+		uint8_t first_decay_level_op4 = 0x1F & b21;
+
+		// 00001111
+		uint8_t release_rate_op1 = 0x0F & b18;
+		uint8_t release_rate_op2 = 0x0F & b19;
+		uint8_t release_rate_op3 = 0x0F & b20;
+		uint8_t release_rate_op4 = 0x0F & b21;
+
+		uint8_t b22 = (uint8_t)rawbuf[fm_voice_array_ptr + 21];
+		uint8_t b23 = (uint8_t)rawbuf[fm_voice_array_ptr + 22];
+		uint8_t b24 = (uint8_t)rawbuf[fm_voice_array_ptr + 23];
+		uint8_t b25 = (uint8_t)rawbuf[fm_voice_array_ptr + 24];
+
+		// 01111111
+		uint8_t total_level_op1 = 0x7F & b22;
+		uint8_t total_level_op2 = 0x7F & b23;
+		uint8_t total_level_op3 = 0x7F & b24;
+		uint8_t total_level_op4 = 0x7F & b25;
+
+		Smps_voice& target = voices[i];
+
+		target.feedback = feedback;
+		target.algorithm = algorithm;
+		target.detune_op1 = op1_detune;
+		target.detune_op2 = op2_detune;
+		target.detune_op3 = op3_detune;
+		target.detune_op4 = op4_detune;
+		target.coarse_frequency_multiplier_op1 = op1_mult;
+		target.coarse_frequency_multiplier_op2 = op2_mult;
+		target.coarse_frequency_multiplier_op3 = op3_mult;
+		target.coarse_frequency_multiplier_op4 = op4_mult;
+		target.rate_scale_op1 = rate_scale_op1;
+		target.rate_scale_op2 = rate_scale_op2;
+		target.rate_scale_op3 = rate_scale_op3;
+		target.rate_scale_op4 = rate_scale_op4;
+		target.attack_rate_op1 = attack_rate_op1;
+		target.attack_rate_op2 = attack_rate_op2;
+		target.attack_rate_op3 = attack_rate_op3;
+		target.attack_rate_op4 = attack_rate_op4;
+		target.lfo_enabled_op1 = lfo_enabled_op_1;
+		target.lfo_enabled_op2 = lfo_enabled_op_2;
+		target.lfo_enabled_op3 = lfo_enabled_op_3;
+		target.lfo_enabled_op4 = lfo_enabled_op_4;
+		target.first_decay_rate_op1 = first_decay_rate_op_1;
+		target.first_decay_rate_op2 = first_decay_rate_op_2;
+		target.first_decay_rate_op3 = first_decay_rate_op_3;
+		target.first_decay_rate_op4 = first_decay_rate_op_4;
+		target.second_decay_rate_op1 = second_decay_rate_op1;
+		target.second_decay_rate_op2 = second_decay_rate_op2;
+		target.second_decay_rate_op3 = second_decay_rate_op3;
+		target.second_decay_rate_op4 = second_decay_rate_op4;
+		target.first_decay_level_op1 = first_decay_level_op1;
+		target.first_decay_level_op2 = first_decay_level_op2;
+		target.first_decay_level_op3 = first_decay_level_op3;
+		target.first_decay_level_op4 = first_decay_level_op4;
+		target.release_rate_op1 = release_rate_op1;
+		target.release_rate_op2 = release_rate_op2;
+		target.release_rate_op3 = release_rate_op3;
+		target.release_rate_op4 = release_rate_op4;
+		target.total_level_op1 = total_level_op1;
+		target.total_level_op2 = total_level_op2;
+		target.total_level_op3 = total_level_op3;
+		target.total_level_op4 = total_level_op4;
+	}
+
+	update_ui_controls();
 }
