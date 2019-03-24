@@ -6,7 +6,8 @@
 typedef enum
 {
 	SMPS_FM = 0,
-	SMPS_DAC = 1
+	SMPS_DAC = 1,
+	SMPS_PSG = 2
 } VoiceType;
 
 class Smps_voice

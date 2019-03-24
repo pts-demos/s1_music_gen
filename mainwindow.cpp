@@ -4,6 +4,7 @@
 #include <QSettings>
 #include <QDateTime>
 #include <QDebug>
+#include <QByteArray>
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -17,11 +18,39 @@ MainWindow::MainWindow(QWidget *parent) :
 	QCoreApplication::setApplicationName("sonic_smps_gen");
 	QSettings settings;
 	settings.setValue("last_run", QDateTime::currentSecsSinceEpoch());
+
+	// Figure out if the program runs in little endian environment
+	int num = 1;
+	if (*(char*)&num == 1) {
+		endianess = LittleEndian;
+	} else {
+		endianess = BigEndian;
+	}
 }
 
 MainWindow::~MainWindow()
 {
 	delete ui;
+}
+
+void MainWindow::toHostEndian(int16_t* data) {
+	if (endianess == LittleEndian) {
+		int16_t x = (*data >> 8) | ( *data << 8);
+		*data = x;
+	}
+}
+
+void MainWindow::toBigEndian(int16_t* data) {
+	if (endianess == LittleEndian) {
+		int16_t x = (*data >> 8) | ( *data << 8);
+		*data = x;
+	}
+}
+
+QChar MainWindow::byteToHex(uint8_t t) {
+	QByteArray arr;
+	arr.append(t);
+	return QString(arr.toHex())[0];
 }
 
 void MainWindow::update_ui_controls() {
@@ -355,9 +384,10 @@ void MainWindow::on_write_song_clicked()
 			fm_patterns.size()*fm_channel_header_size +
 			psg_patterns.size()*psg_header_size;
 
-	unsigned int vac_t_offset = headers_size + patterns_length;
+	int16_t vac_t_offset = headers_size + patterns_length;
+	toBigEndian(&vac_t_offset);
 	int16_t* smps_ptr_1 = (int16_t*)smps_header;
-	smps_ptr_1[0] = (int16_t)vac_t_offset;
+	smps_ptr_1[0] = vac_t_offset;
 
 	// Number of FM+DAC channels. There must always be a DAC channel defined
 	// Megadrive supports 6 FM+1DAC channels. If 6 FM channels are used,
@@ -404,8 +434,9 @@ void MainWindow::on_write_song_clicked()
 		int16_t* write_track_data_addr = (int16_t*)&fm_headers[i * fm_channel_header_size];
 
 		// Pattern data begins when all headers and previous patterns are done
-		int track_data_ptr = headers_size + pattern_offset;
-		write_track_data_addr[0] = (int16_t)track_data_ptr;
+		int16_t track_data_ptr = headers_size + pattern_offset;
+		toBigEndian(&track_data_ptr);
+		write_track_data_addr[0] = track_data_ptr;
 		pattern_offset += fm_patterns[i].size();
 
 		/*
@@ -431,7 +462,9 @@ void MainWindow::on_write_song_clicked()
 		char* psg_ptr = &psg_headers[i * psg_header_size];
 		int16_t* track_d_ptr = (int16_t*)&psg_headers[i * psg_header_size];
 
-		track_d_ptr[0] = headers_size + pattern_offset;
+		int16_t track_d_ptr_val = headers_size + pattern_offset;
+		toBigEndian(&track_d_ptr_val);
+		track_d_ptr[0] = track_d_ptr_val;
 		pattern_offset += psg_patterns[i].size();
 
 		// Initial channel key displacement. This is added to the note before it is
@@ -538,4 +571,182 @@ void MainWindow::on_write_song_clicked()
 	// TODO: Write PSG / DAC data
 
 	fout.close();
+}
+
+void MainWindow::on_import_button_clicked()
+{
+	QSettings settings;
+	QString def_path = settings.value("prev_import_path", QCoreApplication::applicationDirPath()).toString();
+
+	QString fpath = QFileDialog::getOpenFileName(this, "Open file", def_path, "Any files (*)");
+	if (fpath.length() == 0)
+		return;
+
+	QFileInfo finfo(fpath);
+	if (finfo.exists() == false) {
+		qDebug() << "File does not exist: fpath";
+		return;
+	}
+
+	settings.setValue("prev_import_path", fpath);
+	fm_patterns.clear();
+	ui->fm_channel_1->clear();
+	ui->fm_channel_2->clear();
+	ui->fm_channel_3->clear();
+	ui->fm_channel_4->clear();
+	ui->fm_channel_5->clear();
+	ui->fm_channel_6->clear();
+	ui->psg_channel_1->clear();
+	ui->psg_channel_2->clear();
+	ui->psg_channel_3->clear();
+	ui->psg_channel_4->clear();
+
+	QFile f;
+	f.setFileName(fpath);
+	f.open(QIODevice::ReadOnly);
+
+	// TODO: bounds checking
+	QByteArray arr = f.readAll();
+	f.close();
+
+	char* rawbuf = arr.data();
+
+	int16_t fm_voice_array_ptr = 0;
+	memcpy((char*)&fm_voice_array_ptr, rawbuf, sizeof(uint16_t));
+	toHostEndian(&fm_voice_array_ptr);
+
+	qDebug() << "voice array ptr: " << fm_voice_array_ptr;
+
+	uint8_t num_of_fm_channels = 0;
+	uint8_t num_of_psg_channels = 0;
+
+	memcpy(&num_of_fm_channels, &rawbuf[2], sizeof(uint8_t));
+	memcpy(&num_of_psg_channels, &rawbuf[3], sizeof(uint8_t));
+
+	qDebug() << "fm channels: " << num_of_fm_channels << ", psg channels: " << num_of_psg_channels;
+
+	uint8_t dividing_timing = 0;
+	uint8_t main_tempo = 0;
+	uint16_t tempo_timings = 0;
+
+	memcpy((char*)&tempo_timings, &rawbuf[4], sizeof(uint16_t));
+	dividing_timing = tempo_timings >> 4;
+	main_tempo = tempo_timings & 0x00FF;
+
+	qDebug() << "dividing timing: " << dividing_timing << ", main tempo: " << main_tempo;
+
+	std::vector<PatternHeader> pattern_headers;
+	int offset = 6;
+
+	for (int i = 0; i < num_of_fm_channels; i++) {
+		PatternHeader pattern_header;
+		memset(&pattern_header, 0, sizeof(pattern_header));
+
+		int16_t pattern_data_ptr = 0;
+		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(int16_t));
+		toHostEndian(&pattern_data_ptr);
+		pattern_header.pattern_offset = pattern_data_ptr;
+		pattern_header.pattern_number = i;
+
+		bool is_dac = false;
+
+		if (i == 0) {
+			// First FM channel can be a DAC channel
+			int16_t maybe_dac = 0;
+			memcpy((char*)&maybe_dac, &rawbuf[offset + 3], sizeof(int16_t));
+			toHostEndian(&maybe_dac);
+			if (maybe_dac == 0) {
+				qDebug() << "FM channel 1 is used as DAC";
+				is_dac = true;
+			}
+		}
+
+		if (is_dac == false) {
+			memcpy((char*)&pattern_header.initial_channel_key_displacement, &rawbuf[offset + 3], sizeof(int8_t));
+			memcpy((char*)&pattern_header.initial_channel_volume, &rawbuf[offset + 4], sizeof(int8_t));
+			pattern_header.voice_type = SMPS_FM;
+		} else {
+			pattern_header.voice_type = SMPS_DAC;
+		}
+
+		pattern_headers.push_back(pattern_header);
+		offset += 4;
+	}
+
+	for (int i = 0; i < num_of_psg_channels; i++) {
+		PatternHeader pattern_header;
+		memset(&pattern_header, 0, sizeof(pattern_header));
+
+		int16_t pattern_data_ptr = 0;
+		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(int16_t));
+		toHostEndian(&pattern_data_ptr);
+		pattern_header.pattern_offset = pattern_data_ptr;
+		pattern_header.voice_type = SMPS_PSG;
+		pattern_header.pattern_number = num_of_psg_channels;
+
+		memcpy((char*)&pattern_header.unknown, &rawbuf[offset + 3], sizeof(int8_t));
+		memcpy((char*)&pattern_header.initial_voice_num, &rawbuf[offset + 4], sizeof(int8_t));
+
+		pattern_headers.push_back(pattern_header);
+		offset += 4;
+	}
+
+	// Solve the size of each pattern by figuring out when next pattern begins
+	std::sort(pattern_headers.begin(), pattern_headers.end(),
+		[&](const PatternHeader& a, const PatternHeader& b) {
+			return a.pattern_offset < b.pattern_offset;
+		}
+	);
+
+	for (int i = 0; i < pattern_headers.size()-1; i++) {
+		pattern_headers[i].pattern_size = pattern_headers[i+1].pattern_offset - pattern_headers[i].pattern_offset;
+	}
+
+	// last pattern size can be solved by seeing when fm_voice_array_ptr begins
+	// TODO: fuck, are the offsets relative to the beginning of the file or the pointer itself?
+	pattern_headers[pattern_headers.size()-1].pattern_size = fm_voice_array_ptr - pattern_headers[pattern_headers.size()-1].pattern_offset;
+
+	// read pattern data
+
+	for (int i = 0; i < pattern_headers.size(); i++) {
+		PatternHeader& p = pattern_headers[i];
+
+		QString pattern_text = "";
+		for (int c = 0; c < p.pattern_size; c++) {
+			uint8_t hex = rawbuf[offset + c];
+			pattern_text += byteToHex(hex);
+			if (c != 0 && c % 2 == 0) {
+				pattern_text += " ";
+			}
+		}
+
+		PatternEditBox* target = NULL;
+		if (p.voice_type == SMPS_FM || p.voice_type == SMPS_DAC) {
+			switch (p.pattern_number) {
+			case 0: target = ui->fm_channel_1; break;
+			case 1: target = ui->fm_channel_2; break;
+			case 2: target = ui->fm_channel_3; break;
+			case 3: target = ui->fm_channel_4; break;
+			case 4: target = ui->fm_channel_5; break;
+			case 5: target = ui->fm_channel_6; break;
+			}
+		} else {
+			switch (p.pattern_number) {
+			case 0: target = ui->psg_channel_1; break;
+			case 1: target = ui->psg_channel_2; break;
+			case 2: target = ui->psg_channel_3; break;
+			case 3: target = ui->psg_channel_4; break;
+			}
+		}
+
+		if (target == NULL) {
+			qDebug() << "Did not find pattern to edit: " << p.voice_type << ", " << p.pattern_number;
+			continue;
+		}
+
+		target->setText(pattern_text);
+		offset += pattern_headers[i].pattern_size;
+	}
+
+	// read FM and PSG voice data
 }
