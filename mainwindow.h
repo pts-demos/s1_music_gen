@@ -17,17 +17,17 @@ class MainWindow : public QMainWindow
 public:
 	explicit MainWindow(QWidget *parent = nullptr);
 	~MainWindow();
-
 	void update_ui_controls();
 
 private:
 	Smps_voice voices[FM_VOICES];
 	int cur_voice;
+	std::vector<std::vector<uint8_t> > fm_patterns;
+	std::vector<std::vector<uint8_t> > psg_patterns;
 
 private slots:
 	void on_voice_next_clicked();
 	void on_voice_previous_clicked();
-	void on_voice_enable_toggled(bool checked);
 	void on_voice_feedback_valueChanged(int arg1);
 	void on_voice_algorithm_valueChanged(int arg1);
 	void on_voice_detune_op1_valueChanged(int arg1);
@@ -71,7 +71,6 @@ private slots:
 	void on_voice_coarse_frequency_mult_op2_valueChanged(int arg1);
 	void on_voice_coarse_frequency_mult_op3_valueChanged(int arg1);
 	void on_voice_coarse_frequency_mult_op4_valueChanged(int arg1);
-
 private:
 	Ui::MainWindow *ui;
 };

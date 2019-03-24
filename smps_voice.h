@@ -3,6 +3,12 @@
 
 #include <QFile>
 
+typedef enum
+{
+	SMPS_FM = 0,
+	SMPS_DAC = 1
+} VoiceType;
+
 class Smps_voice
 {
 public:
@@ -10,7 +16,7 @@ public:
 
 	void writeInFile(QFile& f);
 
-	bool enabled;
+	VoiceType voice_type;
 
 	int32_t feedback;
 	int32_t algorithm;

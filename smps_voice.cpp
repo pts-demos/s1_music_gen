@@ -45,9 +45,8 @@ Smps_voice::Smps_voice()
 	total_level_op2 = 0;
 	total_level_op3 = 0;
 	total_level_op4 = 0;
-	enabled = false;
+	voice_type = SMPS_FM;
 }
-
 
 void Smps_voice::writeInFile(QFile &f)
 {

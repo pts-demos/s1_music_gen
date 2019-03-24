@@ -14,11 +14,13 @@ CONFIG += c++11
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    smps_voice.cpp
+    smps_voice.cpp \
+    pattern_edit_box.cpp
 
 HEADERS += \
     mainwindow.h \
-    smps_voice.h
+    smps_voice.h \
+    pattern_edit_box.h
 
 FORMS += \
     mainwindow.ui
