@@ -363,6 +363,9 @@ void MainWindow::on_write_song_clicked()
 		return;
 	}
 
+	std::vector<std::vector<uint8_t> > fm_patterns;
+	std::vector<std::vector<uint8_t> > psg_patterns;
+
 	// Convert text hex into bytes
 	ui->fm_channel_1->addPattern(fm_patterns);
 	ui->fm_channel_2->addPattern(fm_patterns);
@@ -374,11 +377,6 @@ void MainWindow::on_write_song_clicked()
 	ui->psg_channel_2->addPattern(psg_patterns);
 	ui->psg_channel_3->addPattern(psg_patterns);
 
-	if (fm_patterns.size() == 0 || psg_patterns.size() == 0) {
-		qDebug() << "Need at least one FM and PSG pattern";
-		return;
-	}
-
 	qDebug() << "Writing " << fm_patterns.size() << " FM patterns and " << psg_patterns.size() << " psg patterns";
 
 	// Write main SMPS header
@@ -389,14 +387,22 @@ void MainWindow::on_write_song_clicked()
 	char* smps_header = new char[smps_header_size];
 	memset(smps_header, 0, smps_header_size);
 
-	unsigned int patterns_length = 0;
-	for (const auto& p : fm_patterns) {
-		patterns_length += p.size();
+	// Solve how much space pattern data requires
+	uint16_t patterns_length = 0;
+
+	for (int i = 0; i < fm_patterns.size(); i++) {
+		qDebug() << "fm pattern " << i << " size: " << fm_patterns[i].size();
+		patterns_length += fm_patterns[i].size();
+	}
+
+	for (int i = 0; i < psg_patterns.size(); i++) {
+		qDebug() << "psg pattern " << i << " size: " << psg_patterns[i].size();
+		patterns_length += psg_patterns[i].size();
 	}
 
 	// $0-$1: Voice table pointer, offset to where the FM synthesis data is located
-
-	unsigned int headers_size = smps_header_size +
+	// It starts immediately after last pattern data
+	uint16_t headers_size = smps_header_size +
 		fm_patterns.size()*fm_channel_header_size +
 		psg_patterns.size()*psg_header_size;
 
@@ -442,13 +448,13 @@ void MainWindow::on_write_song_clicked()
 	char* fm_headers = new char[fm_channel_header_size * fm_patterns.size()];
 	memset(fm_headers, 0, fm_channel_header_size * fm_patterns.size());
 
-	int pattern_offset = 0;
+	uint16_t pattern_offset = 0;
 
 	for (unsigned int i = 0; i < fm_patterns.size(); i++) {
-		char* off_p = &fm_headers[i * fm_channel_header_size];
+		uint8_t* off_p = (uint8_t*)&fm_headers[i * fm_channel_header_size];
 
 		// Track data pointer
-		uint16_t* write_track_data_addr = (uint16_t*)&fm_headers[i * fm_channel_header_size];
+		uint16_t* write_track_data_addr = (uint16_t*)off_p;
 
 		// Pattern data begins when all headers and previous patterns are done
 		uint16_t track_data_ptr = headers_size + pattern_offset;
@@ -456,16 +462,46 @@ void MainWindow::on_write_song_clicked()
 		write_track_data_addr[0] = track_data_ptr;
 		pattern_offset += fm_patterns[i].size();
 
+		uint8_t key_disp = 0;
+		uint8_t vol_att = 0;
+
+		switch (i) {
+		case 0:
+			key_disp = ui->fm_chan1_key_displacement->value();
+			vol_att = ui->fm_chan1_volume_attenuation->value();
+			break;
+		case 1:
+			key_disp = ui->fm_chan2_key_displacement->value();
+			vol_att = ui->fm_chan2_volume_attenuation->value();
+			break;
+		case 2:
+			key_disp = ui->fm_chan3_key_displacement->value();
+			vol_att = ui->fm_chan3_volume_attenuation->value();
+			break;
+		case 3:
+			key_disp = ui->fm_chan4_key_displacement->value();
+			vol_att = ui->fm_chan4_volume_attenuation->value();
+			break;
+		case 4:
+			key_disp = ui->fm_chan5_key_displacement->value();
+			vol_att = ui->fm_chan5_volume_attenuation->value();
+			break;
+		case 5:
+			key_disp = ui->fm_chan6_key_displacement->value();
+			vol_att = ui->fm_chan6_volume_attenuation->value();
+			break;
+		}
+
 		/*
 		 * Initial channel key displacement. From sonicretro.org
 		 * Initial channel key displacement (signed, ignored on DAC). This is added to the note before it is converted
 		 * to a frequency. Sonic 3 or K specific: In the alternate SMPS parsing mode, the channel key displacement is
 		 * added to the *frequency* instead.
 		 */
-		off_p[2] = 0;
+		off_p[2] = key_disp;
 
 		// Initial track volume. 0 is max, 7F is total silence.
-		off_p[3] = 0;
+		off_p[3] = vol_att;
 	}
 
 	fout.write(fm_headers, fm_channel_header_size * fm_patterns.size());
@@ -476,26 +512,48 @@ void MainWindow::on_write_song_clicked()
 	memset(psg_headers, 0, psg_header_size * psg_patterns.size());
 
 	for (unsigned int i = 0; i < psg_patterns.size(); i++) {
-		char* psg_ptr = &psg_headers[i * psg_header_size];
-		uint16_t* track_d_ptr = (uint16_t*)&psg_headers[i * psg_header_size];
+		uint8_t* psg_ptr = (uint8_t*)&psg_headers[i * psg_header_size];
+		uint16_t* track_d_ptr = (uint16_t*)psg_ptr;
 
 		uint16_t track_d_ptr_val = headers_size + pattern_offset;
 		toBigEndian(&track_d_ptr_val);
 		track_d_ptr[0] = track_d_ptr_val;
 		pattern_offset += psg_patterns[i].size();
 
+		uint8_t key_disp = 0;
+		uint8_t vol_att = 0;
+		uint8_t tone = 0;
+
+		switch (i) {
+		case 0:
+			tone = ui->psg_chan1_tone->value();
+			key_disp = ui->psg_chan1_key_displacement->value();
+			vol_att = ui->psg_chan1_volume_attenuation->value();
+			break;
+		case 1:
+			tone = ui->psg_chan2_tone->value();
+			key_disp = ui->psg_chan2_key_displacement->value();
+			vol_att = ui->psg_chan2_volume_attenuation->value();
+			break;
+		case 2:
+			tone = ui->psg_chan3_tone->value();
+			key_disp = ui->psg_chan3_key_displacement->value();
+			vol_att = ui->psg_chan3_volume_attenuation->value();
+			break;
+		}
+
 		// Initial channel key displacement. This is added to the note before it is
 		// converted to a frequency
-		psg_ptr[2] = 0;
+		psg_ptr[2] = key_disp;
 
 		// Initial track volume attenuation: $0 is max volume, $f is total silence
-		psg_ptr[3] = 0;
+		psg_ptr[3] = vol_att;
 
 		// Sonic 2 specific
 		psg_ptr[4] = 0;
 
 		// Default PSG tone (index in lookup table)
-		psg_ptr[5] = 0;
+		psg_ptr[5] = key_disp;
 	}
 
 	fout.write(psg_headers, psg_header_size * psg_patterns.size());
@@ -528,7 +586,7 @@ void MainWindow::on_write_song_clicked()
 	for (unsigned int i = 0; i < FM_VOICES; i++) {
 		Smps_voice& v = voices[i];
 
-		char* ptr = &fm_table_data[i * voice_size];
+		uint8_t* ptr = (uint8_t*)&fm_table_data[i * voice_size];
 
 		// $0: --XXXYYY where
 		//	XXX is feedback
@@ -585,8 +643,6 @@ void MainWindow::on_write_song_clicked()
 	fout.write(fm_table_data, voice_table_size);
 	delete[] fm_table_data;
 
-	// TODO: Write PSG / DAC data
-
 	fout.close();
 }
 
@@ -606,7 +662,7 @@ void MainWindow::on_import_button_clicked()
 	}
 
 	settings.setValue("prev_import_path", fpath);
-	fm_patterns.clear();
+
 	ui->fm_channel_1->clear();
 	ui->fm_channel_2->clear();
 	ui->fm_channel_3->clear();
@@ -688,6 +744,39 @@ void MainWindow::on_import_button_clicked()
 			pattern_header.voice_type = SMPS_DAC;
 		}
 
+		QSpinBox* target_key = NULL;
+		QSpinBox* target_att = NULL;
+
+		switch (i) {
+		case 0:
+			target_key = ui->fm_chan1_key_displacement;
+			target_att = ui->fm_chan1_volume_attenuation;
+			break;
+		case 1:
+			target_key = ui->fm_chan2_key_displacement;
+			target_att = ui->fm_chan2_volume_attenuation;
+			break;
+		case 2:
+			target_key = ui->fm_chan3_key_displacement;
+			target_att = ui->fm_chan3_volume_attenuation;
+			break;
+		case 3:
+			target_key = ui->fm_chan4_key_displacement;
+			target_att = ui->fm_chan4_volume_attenuation;
+			break;
+		case 4:
+			target_key = ui->fm_chan5_key_displacement;
+			target_att = ui->fm_chan5_volume_attenuation;
+			break;
+		case 5:
+			target_key = ui->fm_chan6_key_displacement;
+			target_att = ui->fm_chan6_volume_attenuation;
+			break;
+		}
+
+		target_key->setValue(pattern_header.initial_channel_key_displacement);
+		target_att->setValue(pattern_header.initial_channel_volume);
+
 		pattern_headers.push_back(pattern_header);
 		offset += 4;
 	}
@@ -710,6 +799,32 @@ void MainWindow::on_import_button_clicked()
 		memcpy((char*)&pattern_header.initial_channel_volume, &rawbuf[offset + 3], sizeof(uint8_t));
 		memcpy((char*)&pattern_header.unknown, &rawbuf[offset + 4], sizeof(int8_t));
 		memcpy((char*)&pattern_header.initial_voice_num, &rawbuf[offset + 5], sizeof(int8_t));
+
+		QSpinBox* target_tone = NULL;
+		QSpinBox* target_key = NULL;
+		QSpinBox* target_att = NULL;
+
+		switch (i) {
+		case 0:
+			target_tone = ui->psg_chan1_tone;
+			target_key = ui->psg_chan1_key_displacement;
+			target_att = ui->psg_chan1_volume_attenuation;
+			break;
+		case 1:
+			target_tone = ui->psg_chan2_tone;
+			target_key = ui->psg_chan1_key_displacement;
+			target_att = ui->psg_chan2_volume_attenuation;
+			break;
+		case 2:
+			target_tone = ui->psg_chan3_tone;
+			target_key = ui->psg_chan3_key_displacement;
+			target_att = ui->psg_chan3_volume_attenuation;
+			break;
+		}
+
+		target_tone->setValue(pattern_header.initial_voice_num);
+		target_key->setValue(pattern_header.initial_channel_key_displacement);
+		target_att->setValue(pattern_header.initial_channel_volume);
 
 		pattern_headers.push_back(pattern_header);
 		offset += 6;
@@ -757,7 +872,6 @@ void MainWindow::on_import_button_clicked()
 		PatternHeader& p = pattern_headers[i];
 
 		QString pattern_text = "";
-		qDebug() << "Reading pattern of size: " << p.pattern_size << " at offset " << p.pattern_offset;
 
 		for (int c = 0; c < p.pattern_size; c++) {
 			uint8_t hex = rawbuf[p.pattern_offset + c];

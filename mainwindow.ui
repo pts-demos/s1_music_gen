@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1046</width>
-    <height>615</height>
+    <width>1047</width>
+    <height>581</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,11 +20,11 @@
       <x>10</x>
       <y>10</y>
       <width>1451</width>
-      <height>561</height>
+      <height>501</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="voices">
      <attribute name="title">
@@ -81,8 +81,8 @@
       <widget class="QPushButton" name="write_song">
        <property name="geometry">
         <rect>
-         <x>800</x>
-         <y>20</y>
+         <x>890</x>
+         <y>10</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -94,8 +94,8 @@
       <widget class="QPushButton" name="import_button">
        <property name="geometry">
         <rect>
-         <x>720</x>
-         <y>20</y>
+         <x>810</x>
+         <y>10</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -1049,102 +1049,186 @@
      <widget class="QWidget" name="gridLayoutWidget">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>90</y>
+        <x>10</x>
+        <y>20</y>
         <width>1011</width>
         <height>431</height>
        </rect>
       </property>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="1" column="0">
-        <widget class="PatternEditBox" name="fm_channel_1"/>
+       <item row="5" column="3">
+        <widget class="QSpinBox" name="fm_chan3_key_displacement"/>
        </item>
-       <item row="1" column="7">
-        <widget class="PatternEditBox" name="psg_channel_2"/>
-       </item>
-       <item row="0" column="3">
-        <widget class="QLabel" name="label_29">
-         <property name="text">
-          <string>FM4</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="6">
-        <widget class="QLabel" name="label_32">
-         <property name="text">
-          <string>PSG1</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="PatternEditBox" name="fm_channel_2"/>
-       </item>
-       <item row="1" column="8">
-        <widget class="PatternEditBox" name="psg_channel_3"/>
-       </item>
-       <item row="0" column="8">
-        <widget class="QLabel" name="label_34">
-         <property name="text">
-          <string>PSG3</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="PatternEditBox" name="fm_channel_5"/>
-       </item>
-       <item row="1" column="6">
-        <widget class="PatternEditBox" name="psg_channel_1"/>
-       </item>
-       <item row="0" column="7">
-        <widget class="QLabel" name="label_33">
-         <property name="text">
-          <string>PSG2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QLabel" name="label_30">
-         <property name="text">
-          <string>FM5</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="2">
-        <widget class="PatternEditBox" name="fm_channel_3"/>
-       </item>
-       <item row="1" column="5">
-        <widget class="PatternEditBox" name="fm_channel_6"/>
-       </item>
-       <item row="0" column="2">
-        <widget class="QLabel" name="label_28">
-         <property name="text">
-          <string>FM3</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="5">
-        <widget class="QLabel" name="label_31">
-         <property name="text">
-          <string>FM6</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLabel" name="label_27">
-         <property name="text">
-          <string>FM2</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
+       <item row="2" column="1">
         <widget class="QLabel" name="label_26">
          <property name="text">
           <string>FM1</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
+       <item row="6" column="3">
+        <widget class="QSpinBox" name="fm_chan3_volume_attenuation"/>
+       </item>
+       <item row="8" column="3">
+        <widget class="PatternEditBox" name="fm_channel_3"/>
+       </item>
+       <item row="2" column="6">
+        <widget class="QLabel" name="label_31">
+         <property name="text">
+          <string>FM6</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="6">
+        <widget class="QSpinBox" name="fm_chan6_key_displacement"/>
+       </item>
+       <item row="5" column="7">
+        <widget class="QSpinBox" name="psg_chan1_key_displacement"/>
+       </item>
+       <item row="6" column="10">
+        <widget class="QSpinBox" name="psg_chan3_volume_attenuation"/>
+       </item>
+       <item row="6" column="5">
+        <widget class="QSpinBox" name="fm_chan5_volume_attenuation"/>
+       </item>
+       <item row="6" column="9">
+        <widget class="QSpinBox" name="psg_chan2_volume_attenuation"/>
+       </item>
+       <item row="8" column="9">
+        <widget class="PatternEditBox" name="psg_channel_2"/>
+       </item>
+       <item row="5" column="1">
+        <widget class="QSpinBox" name="fm_chan1_key_displacement"/>
+       </item>
+       <item row="5" column="5">
+        <widget class="QSpinBox" name="fm_chan5_key_displacement"/>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="label_39">
+         <property name="text">
+          <string>Volume attenuation</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="5">
+        <widget class="QLabel" name="label_30">
+         <property name="text">
+          <string>FM5</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_28">
+         <property name="text">
+          <string>FM3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="10">
+        <widget class="QSpinBox" name="psg_chan3_key_displacement"/>
+       </item>
+       <item row="8" column="4">
         <widget class="PatternEditBox" name="fm_channel_4"/>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_38">
+         <property name="text">
+          <string>Key displacement</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="5">
+        <widget class="PatternEditBox" name="fm_channel_5"/>
+       </item>
+       <item row="7" column="9">
+        <widget class="QSpinBox" name="psg_chan2_tone"/>
+       </item>
+       <item row="8" column="6">
+        <widget class="PatternEditBox" name="fm_channel_6"/>
+       </item>
+       <item row="2" column="9">
+        <widget class="QLabel" name="label_33">
+         <property name="text">
+          <string>PSG2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QSpinBox" name="fm_chan1_volume_attenuation"/>
+       </item>
+       <item row="8" column="1">
+        <widget class="PatternEditBox" name="fm_channel_1"/>
+       </item>
+       <item row="8" column="2">
+        <widget class="PatternEditBox" name="fm_channel_2"/>
+       </item>
+       <item row="6" column="6">
+        <widget class="QSpinBox" name="fm_chan6_volume_attenuation"/>
+       </item>
+       <item row="2" column="7">
+        <widget class="QLabel" name="label_32">
+         <property name="text">
+          <string>PSG1</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="10">
+        <widget class="QLabel" name="label_34">
+         <property name="text">
+          <string>PSG3</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="label_40">
+         <property name="text">
+          <string>Default tone</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="10">
+        <widget class="QSpinBox" name="psg_chan3_tone"/>
+       </item>
+       <item row="7" column="7">
+        <widget class="QSpinBox" name="psg_chan1_tone"/>
+       </item>
+       <item row="5" column="4">
+        <widget class="QSpinBox" name="fm_chan4_key_displacement"/>
+       </item>
+       <item row="8" column="7">
+        <widget class="PatternEditBox" name="psg_channel_1"/>
+       </item>
+       <item row="2" column="4">
+        <widget class="QLabel" name="label_29">
+         <property name="text">
+          <string>FM4</string>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="10">
+        <widget class="PatternEditBox" name="psg_channel_3"/>
+       </item>
+       <item row="6" column="7">
+        <widget class="QSpinBox" name="psg_chan1_volume_attenuation"/>
+       </item>
+       <item row="6" column="4">
+        <widget class="QSpinBox" name="fm_chan4_volume_attenuation"/>
+       </item>
+       <item row="5" column="2">
+        <widget class="QSpinBox" name="fm_chan2_key_displacement"/>
+       </item>
+       <item row="6" column="2">
+        <widget class="QSpinBox" name="fm_chan2_volume_attenuation"/>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLabel" name="label_27">
+         <property name="text">
+          <string>FM2</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="9">
+        <widget class="QSpinBox" name="psg_chan2_key_displacement"/>
        </item>
       </layout>
      </widget>
@@ -1156,7 +1240,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1046</width>
+     <width>1047</width>
      <height>21</height>
     </rect>
    </property>

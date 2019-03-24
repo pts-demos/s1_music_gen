@@ -1,8 +1,8 @@
 #include "pattern_edit_box.h"
 #include <QDebug>
+#include <sstream>
 
 QString PatternEditBox::allowed_chars = "0123456789ABCDEF ";
-uint8_t PatternEditBox::char_to_byte[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 
 PatternEditBox::PatternEditBox(QWidget* parent)
 	: QTextEdit(parent)
@@ -31,17 +31,18 @@ void PatternEditBox::handleTextChanged()
 }
 
 std::vector<uint8_t> PatternEditBox::getBytes() {
-	QString text = toPlainText().toUpper().replace(" ", "");
+	std::string text = toPlainText().toUpper().replace(" ", "").toStdString();
 	std::vector<uint8_t> out;
 
-	for (auto& c : text) {
-		int ind = allowed_chars.indexOf(c);
-		if (ind < 0 || ind > 15) {
-			qDebug() << "error: cannot find byte mapping for hex: " << c;
-			continue;
-		}
-
-		out.push_back(PatternEditBox::char_to_byte[ind]);
+	for (int i = 1; i < text.size(); i += 2) {
+		std::stringstream ss;
+		ss << text.at(i-1) << text.at(i);
+		std::string one_hex = ss.str();
+		ss.str("");
+		ss << std::hex << one_hex;
+		uint16_t hex = 0;
+		ss >> hex;
+		out.push_back(hex);
 	}
 
 	return out;

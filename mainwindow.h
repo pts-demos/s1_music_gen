@@ -49,8 +49,6 @@ public:
 private:
 	Smps_voice voices[FM_VOICES];
 	int cur_voice;
-	std::vector<std::vector<uint8_t> > fm_patterns;
-	std::vector<std::vector<uint8_t> > psg_patterns;
 	HostEndianess endianess;
 
 private slots:

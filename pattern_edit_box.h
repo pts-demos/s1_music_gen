@@ -8,7 +8,6 @@ class PatternEditBox : public QTextEdit
 public:
 	PatternEditBox(QWidget* parent = NULL);
 	static QString allowed_chars;
-	static uint8_t char_to_byte[16];
 
 	/**
 	 * Returns the contents of this pattern as hexes turned into bytes
