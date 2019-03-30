@@ -201,6 +201,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_algorithm">
        <property name="geometry">
@@ -210,6 +213,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>7</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_detune_op1">
@@ -221,6 +227,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_detune_op3">
        <property name="geometry">
@@ -231,6 +240,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_detune_op2">
        <property name="geometry">
@@ -240,6 +252,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>7</number>
        </property>
       </widget>
       <widget class="QLabel" name="label">
@@ -381,6 +396,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_rate_op2">
        <property name="geometry">
@@ -390,6 +408,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>31</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_rate_op4">
@@ -401,6 +422,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_rate_op3">
        <property name="geometry">
@@ -410,6 +434,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>31</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_10">
@@ -486,6 +513,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QLabel" name="label_15">
        <property name="geometry">
@@ -509,6 +539,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_second_decay_rate_op2">
        <property name="geometry">
@@ -519,6 +552,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_second_decay_rate_op4">
        <property name="geometry">
@@ -528,6 +564,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>31</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_16">
@@ -565,6 +604,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>15</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_level_op2">
        <property name="geometry">
@@ -574,6 +616,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>15</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_level_op3">
@@ -585,6 +630,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>15</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_first_decay_level_op4">
        <property name="geometry">
@@ -594,6 +642,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>15</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_18">
@@ -657,6 +708,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>127</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op4">
        <property name="geometry">
@@ -666,6 +720,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>127</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op3">
@@ -677,6 +734,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>127</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op1">
        <property name="geometry">
@@ -686,6 +746,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>127</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_43">
@@ -775,6 +838,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>3</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_ratescale_op4">
        <property name="geometry">
@@ -784,6 +850,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>3</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_7">
@@ -808,6 +877,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>3</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_ratescale_op3">
        <property name="geometry">
@@ -818,6 +890,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>3</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_detune_op4">
        <property name="geometry">
@@ -827,6 +902,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>7</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_47">
@@ -851,6 +929,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_attack_rate_op_4">
        <property name="geometry">
@@ -860,6 +941,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>31</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_attack_rate_op_2">
@@ -871,6 +955,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>31</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_attack_rate_op_3">
        <property name="geometry">
@@ -880,6 +967,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>31</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_48">
@@ -943,6 +1033,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op2">
        <property name="geometry">
@@ -952,6 +1045,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>7</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op3">
@@ -963,6 +1059,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>7</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op4">
        <property name="geometry">
@@ -972,6 +1071,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>7</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_52">
@@ -1035,6 +1137,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>15</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_coarse_frequency_mult_op2">
        <property name="geometry">
@@ -1044,6 +1149,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>15</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_coarse_frequency_mult_op3">
@@ -1055,6 +1163,9 @@
          <height>22</height>
         </rect>
        </property>
+       <property name="maximum">
+        <number>15</number>
+       </property>
       </widget>
       <widget class="QSpinBox" name="voice_coarse_frequency_mult_op4">
        <property name="geometry">
@@ -1064,6 +1175,9 @@
          <width>42</width>
          <height>22</height>
         </rect>
+       </property>
+       <property name="maximum">
+        <number>15</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_22">
