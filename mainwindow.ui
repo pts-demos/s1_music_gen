@@ -709,7 +709,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>127</number>
+        <number>255</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op4">
@@ -722,7 +722,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>127</number>
+        <number>255</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op3">
@@ -735,7 +735,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>127</number>
+        <number>255</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_total_level_op1">
@@ -748,7 +748,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>127</number>
+        <number>255</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_43">
@@ -1034,7 +1034,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>7</number>
+        <number>15</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op2">
@@ -1047,7 +1047,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>7</number>
+        <number>15</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op3">
@@ -1060,7 +1060,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>7</number>
+        <number>15</number>
        </property>
       </widget>
       <widget class="QSpinBox" name="voice_release_rate_op4">
@@ -1073,7 +1073,7 @@
         </rect>
        </property>
        <property name="maximum">
-        <number>7</number>
+        <number>15</number>
        </property>
       </widget>
       <widget class="QLabel" name="label_52">

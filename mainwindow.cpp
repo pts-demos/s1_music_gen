@@ -81,6 +81,10 @@ void MainWindow::update_ui_controls() {
 	ui->voice_detune_op2->setValue(voices[cur_voice].detune_op2);
 	ui->voice_detune_op3->setValue(voices[cur_voice].detune_op3);
 	ui->voice_detune_op4->setValue(voices[cur_voice].detune_op4);
+	ui->voice_coarse_frequency_mult_op1->setValue(voices[cur_voice].coarse_frequency_multiplier_op1);
+	ui->voice_coarse_frequency_mult_op2->setValue(voices[cur_voice].coarse_frequency_multiplier_op2);
+	ui->voice_coarse_frequency_mult_op3->setValue(voices[cur_voice].coarse_frequency_multiplier_op3);
+	ui->voice_coarse_frequency_mult_op4->setValue(voices[cur_voice].coarse_frequency_multiplier_op4);
 	ui->voice_ratescale_op1->setValue(voices[cur_voice].rate_scale_op1);
 	ui->voice_ratescale_op2->setValue(voices[cur_voice].rate_scale_op2);
 	ui->voice_ratescale_op3->setValue(voices[cur_voice].rate_scale_op3);
@@ -434,7 +438,6 @@ void MainWindow::on_write_song_clicked()
 	toBigEndian(&vac_t_offset);
 	uint16_t* smps_ptr_1 = (uint16_t*)smps_header;
 	smps_ptr_1[0] = vac_t_offset;
-	qDebug() << "voice array pointer: " << headers_size + patterns_length;
 
 	// Number of FM+DAC channels
 	//
@@ -631,7 +634,8 @@ void MainWindow::on_write_song_clicked()
 	unsigned int voice_table_size = (unsigned int)voices.size() * voice_size;
 	unsigned char* fm_table_data = new unsigned char[voice_table_size];
 	memset(fm_table_data, 0, voice_table_size);
-	qDebug() << "writing " << voice_table_size << " bytes of voices";
+	qDebug() << "Writing FM voice table to offset: " << headers_size + patterns_length
+		<< " with " << voice_table_size << " bytes of voicedata";
 
 	// Write all FM voices into a buffer
 	// https://segaretro.org/SMPS/Voices_and_samples
@@ -648,47 +652,47 @@ void MainWindow::on_write_song_clicked()
 		// $1-$4: -XXXYYYY where
 		//	XXX is Detune of operator n
 		//	YYYY is coarse-frequency multiplier of operator n
-		ptr[1] = (v.detune_op1 << 3) + v.coarse_frequency_multiplier_op1;
-		ptr[2] = (v.detune_op2 << 3) + v.coarse_frequency_multiplier_op2;
-		ptr[3] = (v.detune_op3 << 3) + v.coarse_frequency_multiplier_op3;
-		ptr[4] = (v.detune_op4 << 3) + v.coarse_frequency_multiplier_op4;
+		ptr[1] = (v.detune_op1 << 4) + v.coarse_frequency_multiplier_op1;
+		ptr[2] = (v.detune_op3 << 4) + v.coarse_frequency_multiplier_op3;
+		ptr[3] = (v.detune_op2 << 4) + v.coarse_frequency_multiplier_op2;
+		ptr[4] = (v.detune_op4 << 4) + v.coarse_frequency_multiplier_op4;
 
 		// $5-$8: XX-YYYYY where
 		//	XX is rate scaling of operator n
 		//	YYYYY is attack rate of operator n
 		ptr[5] = (v.rate_scale_op1 << 6) + v.attack_rate_op1;
-		ptr[6] = (v.rate_scale_op2 << 6) + v.attack_rate_op2;
-		ptr[7] = (v.rate_scale_op3 << 6) + v.attack_rate_op3;
+		ptr[6] = (v.rate_scale_op3 << 6) + v.attack_rate_op3;
+		ptr[7] = (v.rate_scale_op2 << 6) + v.attack_rate_op2;
 		ptr[8] = (v.rate_scale_op4 << 6) + v.attack_rate_op4;
 
 		// $9-$C: X--YYYYY where
 		//	X: LFO enabled
 		//	YYYYY: First decay rate of operator n
 		ptr[9] = (v.lfo_enabled_op1 << 7) + v.first_decay_rate_op1;
-		ptr[10] = (v.lfo_enabled_op2 << 7) + v.first_decay_rate_op2;
-		ptr[11] = (v.lfo_enabled_op3 << 7) + v.first_decay_rate_op3;
+		ptr[10] = (v.lfo_enabled_op3 << 7) + v.first_decay_rate_op3;
+		ptr[11] = (v.lfo_enabled_op2 << 7) + v.first_decay_rate_op2;
 		ptr[12] = (v.lfo_enabled_op4 << 7) + v.first_decay_rate_op4;
 
 		// $D-10: ---XXXXX where
 		//	XXXXX: Second delay rate/sustain rate of operator n
 		ptr[13] = v.second_decay_rate_op1;
-		ptr[14] = v.second_decay_rate_op2;
-		ptr[15] = v.second_decay_rate_op3;
+		ptr[14] = v.second_decay_rate_op3;
+		ptr[15] = v.second_decay_rate_op2;
 		ptr[16] = v.second_decay_rate_op4;
 
 		// $11-$14: XXXXYYYY where
 		//	XXXX is first decay level/sutain level of operator n
 		//	YYYY is release rate of operator n
-		ptr[17] = (v.first_decay_rate_op1 << 4) + v.release_rate_op1;
-		ptr[18] = (v.first_decay_rate_op2 << 4) + v.release_rate_op2;
-		ptr[19] = (v.first_decay_rate_op3 << 4) + v.release_rate_op3;
-		ptr[20] = (v.first_decay_rate_op4 << 4) + v.release_rate_op4;
+		ptr[17] = (v.first_decay_level_op1 << 4) + v.release_rate_op1;
+		ptr[18] = (v.first_decay_level_op3 << 4) + v.release_rate_op3;
+		ptr[19] = (v.first_decay_level_op2 << 4) + v.release_rate_op2;
+		ptr[20] = (v.first_decay_level_op4 << 4) + v.release_rate_op4;
 
 		// $15-$18: -XXXXXXX where
 		//	XXXXXXX is total level of operator n
 		ptr[21] = v.total_level_op1;
-		ptr[22] = v.total_level_op2;
-		ptr[23] = v.total_level_op3;
+		ptr[22] = v.total_level_op3;
+		ptr[23] = v.total_level_op2;
 		ptr[24] = v.total_level_op4;
 	}
 
@@ -751,8 +755,6 @@ void MainWindow::on_import_button_clicked()
 	uint16_t fm_voice_array_ptr = 0;
 	memcpy((char*)&fm_voice_array_ptr, rawbuf, sizeof(uint16_t));
 	toHostEndian(&fm_voice_array_ptr);
-
-	qDebug() << "voice array ptr: " << fm_voice_array_ptr;
 
 	uint8_t num_of_fm_channels = 0;
 	uint8_t num_of_psg_channels = 0;
@@ -1018,10 +1020,13 @@ void MainWindow::on_import_button_clicked()
 	voices.clear();
 	cur_voice = 0;
 
+	qDebug() << "Reading FM voice table from offset: " << fm_voice_array_ptr;
+
 	for (int i = 0; i < voices_to_read; i++) {
 		voices.push_back(Smps_voice());
 
-		uint8_t b1 = (uint8_t)rawbuf[fm_voice_array_ptr + (i*voice_size)];
+		uint8_t* read_ptr = (uint8_t*)&rawbuf[fm_voice_array_ptr + (i*voice_size)];
+		uint8_t b1 = read_ptr[0];
 
 		// 00111000
 		uint8_t feedback = b1 >> 3;
@@ -1029,10 +1034,10 @@ void MainWindow::on_import_button_clicked()
 		// 00000111
 		uint8_t algorithm = 0x07 & b1;
 
-		uint8_t b2 = (uint8_t)rawbuf[fm_voice_array_ptr + 1];
-		uint8_t b3 = (uint8_t)rawbuf[fm_voice_array_ptr + 2];
-		uint8_t b4 = (uint8_t)rawbuf[fm_voice_array_ptr + 3];
-		uint8_t b5 = (uint8_t)rawbuf[fm_voice_array_ptr + 4];
+		uint8_t b2 = (uint8_t)read_ptr[1];
+		uint8_t b3 = (uint8_t)read_ptr[2];
+		uint8_t b4 = (uint8_t)read_ptr[3];
+		uint8_t b5 = (uint8_t)read_ptr[4];
 
 		// 01110000
 		uint8_t op1_detune = b2 >> 4;
@@ -1046,78 +1051,80 @@ void MainWindow::on_import_button_clicked()
 		uint8_t op2_mult = 0x0F & b4;
 		uint8_t op4_mult = 0x0F & b5;
 
-		uint8_t b6 = (uint8_t)rawbuf[fm_voice_array_ptr + 5];
-		uint8_t b7 = (uint8_t)rawbuf[fm_voice_array_ptr + 6];
-		uint8_t b8 = (uint8_t)rawbuf[fm_voice_array_ptr + 7];
-		uint8_t b9 = (uint8_t)rawbuf[fm_voice_array_ptr + 8];
+		uint8_t b6 = (uint8_t)read_ptr[5];
+		uint8_t b7 = (uint8_t)read_ptr[6];
+		uint8_t b8 = (uint8_t)read_ptr[7];
+		uint8_t b9 = (uint8_t)read_ptr[8];
 
 		// 11000000
 		uint8_t rate_scale_op1 = b6 >> 6;
-		uint8_t rate_scale_op2 = b7 >> 6;
-		uint8_t rate_scale_op3 = b8 >> 6;
+		uint8_t rate_scale_op3 = b7 >> 6;
+		uint8_t rate_scale_op2 = b8 >> 6;
 		uint8_t rate_scale_op4 = b9 >> 6;
 
 		// 00011111
 		uint8_t attack_rate_op1 = 0x1F & b6;
-		uint8_t attack_rate_op2 = 0x1F & b7;
-		uint8_t attack_rate_op3 = 0x1F & b8;
+		uint8_t attack_rate_op3 = 0x1F & b7;
+		uint8_t attack_rate_op2 = 0x1F & b8;
 		uint8_t attack_rate_op4 = 0x1F & b9;
 
-		uint8_t b10 = (uint8_t)rawbuf[fm_voice_array_ptr + 9];
-		uint8_t b11 = (uint8_t)rawbuf[fm_voice_array_ptr + 10];
-		uint8_t b12 = (uint8_t)rawbuf[fm_voice_array_ptr + 11];
-		uint8_t b13 = (uint8_t)rawbuf[fm_voice_array_ptr + 12];
+		uint8_t b10 = (uint8_t)read_ptr[9];
+		uint8_t b11 = (uint8_t)read_ptr[10];
+		uint8_t b12 = (uint8_t)read_ptr[11];
+		uint8_t b13 = (uint8_t)read_ptr[12];
 
 		// 10000000
 		uint8_t lfo_enabled_op_1 = b10 >> 7;
-		uint8_t lfo_enabled_op_2 = b11 >> 7;
-		uint8_t lfo_enabled_op_3 = b12 >> 7;
+		uint8_t lfo_enabled_op_3 = b11 >> 7;
+		uint8_t lfo_enabled_op_2 = b12 >> 7;
 		uint8_t lfo_enabled_op_4 = b13 >> 7;
 
 		// 00011111
 		uint8_t first_decay_rate_op_1 = 0x1F & b10;
-		uint8_t first_decay_rate_op_2 = 0x1F & b11;
-		uint8_t first_decay_rate_op_3 = 0x1F & b12;
+		uint8_t first_decay_rate_op_3 = 0x1F & b11;
+		uint8_t first_decay_rate_op_2 = 0x1F & b12;
 		uint8_t first_decay_rate_op_4 = 0x1F & b13;
 
-		uint8_t b14 = (uint8_t)rawbuf[fm_voice_array_ptr + 13];
-		uint8_t b15 = (uint8_t)rawbuf[fm_voice_array_ptr + 14];
-		uint8_t b16 = (uint8_t)rawbuf[fm_voice_array_ptr + 15];
-		uint8_t b17 = (uint8_t)rawbuf[fm_voice_array_ptr + 16];
+		uint8_t b14 = (uint8_t)read_ptr[13];
+		uint8_t b15 = (uint8_t)read_ptr[14];
+		uint8_t b16 = (uint8_t)read_ptr[15];
+		uint8_t b17 = (uint8_t)read_ptr[16];
 
 		// 00011111
 		uint8_t second_decay_rate_op1 = 0x1F & b14;
-		uint8_t second_decay_rate_op2 = 0x1F & b15;
-		uint8_t second_decay_rate_op3 = 0x1F & b16;
+		uint8_t second_decay_rate_op3 = 0x1F & b15;
+		uint8_t second_decay_rate_op2 = 0x1F & b16;
 		uint8_t second_decay_rate_op4 = 0x1F & b17;
 
-		uint8_t b18 = (uint8_t)rawbuf[fm_voice_array_ptr + 17];
-		uint8_t b19 = (uint8_t)rawbuf[fm_voice_array_ptr + 18];
-		uint8_t b20 = (uint8_t)rawbuf[fm_voice_array_ptr + 19];
-		uint8_t b21 = (uint8_t)rawbuf[fm_voice_array_ptr + 20];
+		uint8_t b18 = (uint8_t)read_ptr[17];
+		uint8_t b19 = (uint8_t)read_ptr[18];
+		uint8_t b20 = (uint8_t)read_ptr[19];
+		uint8_t b21 = (uint8_t)read_ptr[20];
 
-		// 1111000
-		uint8_t first_decay_level_op1 = b18 >> 3;
-		uint8_t first_decay_level_op2 = b19 >> 3;
-		uint8_t first_decay_level_op3 = b20 >> 3;
-		uint8_t first_decay_level_op4 = b21 >> 3;
+		// 11110000
+		uint8_t first_decay_level_op1 = b18 >> 4;
+		uint8_t first_decay_level_op3 = b19 >> 4;
+		uint8_t first_decay_level_op2 = b20 >> 4;
+		uint8_t first_decay_level_op4 = b21 >> 4;
 
 		// 00001111
 		uint8_t release_rate_op1 = 0x0F & b18;
-		uint8_t release_rate_op2 = 0x0F & b19;
-		uint8_t release_rate_op3 = 0x0F & b20;
+		uint8_t release_rate_op3 = 0x0F & b19;
+		uint8_t release_rate_op2 = 0x0F & b20;
 		uint8_t release_rate_op4 = 0x0F & b21;
 
-		uint8_t b22 = (uint8_t)rawbuf[fm_voice_array_ptr + 21];
-		uint8_t b23 = (uint8_t)rawbuf[fm_voice_array_ptr + 22];
-		uint8_t b24 = (uint8_t)rawbuf[fm_voice_array_ptr + 23];
-		uint8_t b25 = (uint8_t)rawbuf[fm_voice_array_ptr + 24];
+		uint8_t b22 = (uint8_t)read_ptr[21];
+		uint8_t b23 = (uint8_t)read_ptr[22];
+		uint8_t b24 = (uint8_t)read_ptr[23];
+		uint8_t b25 = (uint8_t)read_ptr[24];
 
-		// 01111111
-		uint8_t total_level_op1 = 0x7F & b22;
-		uint8_t total_level_op2 = 0x7F & b23;
-		uint8_t total_level_op3 = 0x7F & b24;
-		uint8_t total_level_op4 = 0x7F & b25;
+		// Wikis claim this be 0111 1111 but in some songs there are
+		// values like 0x80 stored in this field, which takes the full byte
+
+		uint8_t total_level_op1 = b22;
+		uint8_t total_level_op3 = b23;
+		uint8_t total_level_op2 = b24;
+		uint8_t total_level_op4 = b25;
 
 		Smps_voice& target = voices[i];
 
