@@ -482,14 +482,14 @@ void MainWindow::on_write_song_clicked()
 
 	// Write headers for all FM and DAC channels
 
-	unsigned char* fm_headers = new unsigned char[fm_channel_header_size * fm_patterns.size()];
+	uint8_t* fm_headers = new uint8_t[fm_channel_header_size * fm_patterns.size()];
 	memset(fm_headers, 0, fm_channel_header_size * fm_patterns.size());
 
 	uint16_t pattern_offset = 0;
 
 	for (unsigned int i = 0; i < fm_patterns.size(); i++) {
 		qDebug() << "Writing FM channel " << i;
-		uint8_t* off_p = (uint8_t*)&fm_headers[i * fm_channel_header_size];
+		uint8_t* off_p = &fm_headers[i * fm_channel_header_size];
 
 		// Track data pointer
 		uint16_t* write_track_data_addr = (uint16_t*)off_p;
@@ -505,28 +505,28 @@ void MainWindow::on_write_song_clicked()
 
 		switch (i) {
 		case 0:
-			key_disp = ui->fm_chan1_key_displacement->value();
-			vol_att = ui->fm_chan1_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan1_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan1_volume_attenuation->value();
 			break;
 		case 1:
-			key_disp = ui->fm_chan2_key_displacement->value();
-			vol_att = ui->fm_chan2_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan2_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan2_volume_attenuation->value();
 			break;
 		case 2:
-			key_disp = ui->fm_chan3_key_displacement->value();
-			vol_att = ui->fm_chan3_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan3_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan3_volume_attenuation->value();
 			break;
 		case 3:
-			key_disp = ui->fm_chan4_key_displacement->value();
-			vol_att = ui->fm_chan4_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan4_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan4_volume_attenuation->value();
 			break;
 		case 4:
-			key_disp = ui->fm_chan5_key_displacement->value();
-			vol_att = ui->fm_chan5_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan5_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan5_volume_attenuation->value();
 			break;
 		case 5:
-			key_disp = ui->fm_chan6_key_displacement->value();
-			vol_att = ui->fm_chan6_volume_attenuation->value();
+			key_disp = (uint8_t)ui->fm_chan6_key_displacement->value();
+			vol_att = (uint8_t)ui->fm_chan6_volume_attenuation->value();
 			break;
 		}
 
@@ -750,7 +750,7 @@ void MainWindow::on_import_button_clicked()
 	QByteArray arr = f.readAll();
 	f.close();
 
-	char* rawbuf = arr.data();
+	uint8_t* rawbuf = (uint8_t*)arr.data();
 
 	uint16_t fm_voice_array_ptr = 0;
 	memcpy((char*)&fm_voice_array_ptr, rawbuf, sizeof(uint16_t));
@@ -796,8 +796,8 @@ void MainWindow::on_import_button_clicked()
 
 		if (i == 0) {
 			// First FM channel can be a DAC channel if the next two bytes are zero
-			int16_t maybe_dac = 0;
-			memcpy((char*)&maybe_dac, &rawbuf[offset + 3], sizeof(int16_t));
+			uint16_t maybe_dac = 0;
+			memcpy((char*)&maybe_dac, &rawbuf[offset + 3], sizeof(uint16_t));
 			toHostEndian(&maybe_dac);
 			if (maybe_dac == 0) {
 				qDebug() << "FM channel 0 is used as DAC";
@@ -806,8 +806,8 @@ void MainWindow::on_import_button_clicked()
 		}
 
 		if (is_dac == false) {
-			memcpy((char*)&pattern_header.initial_channel_key_displacement, &rawbuf[offset + 3], sizeof(int8_t));
-			memcpy((char*)&pattern_header.initial_channel_volume, &rawbuf[offset + 4], sizeof(int8_t));
+			pattern_header.initial_channel_key_displacement = rawbuf[offset + 2];
+			pattern_header.initial_channel_volume = rawbuf[offset + 3];
 			pattern_header.voice_type = SMPS_FM;
 		} else {
 			pattern_header.voice_type = SMPS_DAC;
@@ -863,10 +863,10 @@ void MainWindow::on_import_button_clicked()
 		pattern_header.voice_type = SMPS_PSG;
 		pattern_header.pattern_number = i;
 
-		memcpy((char*)&pattern_header.initial_channel_key_displacement, &rawbuf[offset + 2], sizeof(uint8_t));
-		memcpy((char*)&pattern_header.initial_channel_volume, &rawbuf[offset + 3], sizeof(uint8_t));
-		memcpy((char*)&pattern_header.unknown, &rawbuf[offset + 4], sizeof(int8_t));
-		memcpy((char*)&pattern_header.initial_voice_num, &rawbuf[offset + 5], sizeof(int8_t));
+		pattern_header.initial_channel_key_displacement = rawbuf[offset + 2];
+		pattern_header.initial_channel_volume = rawbuf[offset + 3];
+		pattern_header.unknown = rawbuf[offset + 4];
+		pattern_header.initial_voice_num = rawbuf[offset + 5];
 
 		QSpinBox* target_tone = NULL;
 		QSpinBox* target_key = NULL;

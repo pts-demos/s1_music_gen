@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="voices">
      <attribute name="title">
@@ -1249,7 +1249,11 @@
       </property>
       <layout class="QGridLayout" name="gridLayout">
        <item row="5" column="3">
-        <widget class="QSpinBox" name="fm_chan3_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan3_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="2" column="1">
         <widget class="QLabel" name="label_26">
@@ -1259,7 +1263,11 @@
         </widget>
        </item>
        <item row="6" column="3">
-        <widget class="QSpinBox" name="fm_chan3_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan3_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="3">
         <widget class="PatternEditBox" name="fm_channel_3"/>
@@ -1272,28 +1280,56 @@
         </widget>
        </item>
        <item row="5" column="6">
-        <widget class="QSpinBox" name="fm_chan6_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan6_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="5" column="7">
-        <widget class="QSpinBox" name="psg_chan1_key_displacement"/>
+        <widget class="QSpinBox" name="psg_chan1_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="10">
-        <widget class="QSpinBox" name="psg_chan3_volume_attenuation"/>
+        <widget class="QSpinBox" name="psg_chan3_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="5">
-        <widget class="QSpinBox" name="fm_chan5_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan5_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="9">
-        <widget class="QSpinBox" name="psg_chan2_volume_attenuation"/>
+        <widget class="QSpinBox" name="psg_chan2_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="9">
         <widget class="PatternEditBox" name="psg_channel_2"/>
        </item>
        <item row="5" column="1">
-        <widget class="QSpinBox" name="fm_chan1_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan1_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="5" column="5">
-        <widget class="QSpinBox" name="fm_chan5_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan5_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="0">
         <widget class="QLabel" name="label_39">
@@ -1317,7 +1353,11 @@
         </widget>
        </item>
        <item row="5" column="10">
-        <widget class="QSpinBox" name="psg_chan3_key_displacement"/>
+        <widget class="QSpinBox" name="psg_chan3_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="4">
         <widget class="PatternEditBox" name="fm_channel_4"/>
@@ -1333,7 +1373,11 @@
         <widget class="PatternEditBox" name="fm_channel_5"/>
        </item>
        <item row="7" column="9">
-        <widget class="QSpinBox" name="psg_chan2_tone"/>
+        <widget class="QSpinBox" name="psg_chan2_tone">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="6">
         <widget class="PatternEditBox" name="fm_channel_6"/>
@@ -1346,7 +1390,11 @@
         </widget>
        </item>
        <item row="6" column="1">
-        <widget class="QSpinBox" name="fm_chan1_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan1_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="1">
         <widget class="PatternEditBox" name="fm_channel_1"/>
@@ -1355,7 +1403,11 @@
         <widget class="PatternEditBox" name="fm_channel_2"/>
        </item>
        <item row="6" column="6">
-        <widget class="QSpinBox" name="fm_chan6_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan6_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="2" column="7">
         <widget class="QLabel" name="label_32">
@@ -1379,13 +1431,25 @@
         </widget>
        </item>
        <item row="7" column="10">
-        <widget class="QSpinBox" name="psg_chan3_tone"/>
+        <widget class="QSpinBox" name="psg_chan3_tone">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="7" column="7">
-        <widget class="QSpinBox" name="psg_chan1_tone"/>
+        <widget class="QSpinBox" name="psg_chan1_tone">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="5" column="4">
-        <widget class="QSpinBox" name="fm_chan4_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan4_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="8" column="7">
         <widget class="PatternEditBox" name="psg_channel_1"/>
@@ -1401,16 +1465,32 @@
         <widget class="PatternEditBox" name="psg_channel_3"/>
        </item>
        <item row="6" column="7">
-        <widget class="QSpinBox" name="psg_chan1_volume_attenuation"/>
+        <widget class="QSpinBox" name="psg_chan1_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="4">
-        <widget class="QSpinBox" name="fm_chan4_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan4_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="5" column="2">
-        <widget class="QSpinBox" name="fm_chan2_key_displacement"/>
+        <widget class="QSpinBox" name="fm_chan2_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="6" column="2">
-        <widget class="QSpinBox" name="fm_chan2_volume_attenuation"/>
+        <widget class="QSpinBox" name="fm_chan2_volume_attenuation">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
        <item row="2" column="2">
         <widget class="QLabel" name="label_27">
@@ -1420,7 +1500,11 @@
         </widget>
        </item>
        <item row="5" column="9">
-        <widget class="QSpinBox" name="psg_chan2_key_displacement"/>
+        <widget class="QSpinBox" name="psg_chan2_key_displacement">
+         <property name="maximum">
+          <number>255</number>
+         </property>
+        </widget>
        </item>
       </layout>
      </widget>

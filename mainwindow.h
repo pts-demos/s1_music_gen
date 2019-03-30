@@ -17,11 +17,11 @@ typedef struct {
 	VoiceType voice_type;
 	uint16_t pattern_offset;
 	uint16_t pattern_size;
-	int8_t pattern_number;
-	int8_t initial_channel_key_displacement;
-	int8_t initial_channel_volume;
-	int8_t unknown;
-	int8_t initial_voice_num;
+	uint8_t pattern_number;
+	uint8_t initial_channel_key_displacement;
+	uint8_t initial_channel_volume;
+	uint8_t unknown;
+	uint8_t initial_voice_num;
 } PatternHeader;
 
 class MainWindow : public QMainWindow

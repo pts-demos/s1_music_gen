@@ -25,13 +25,6 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
-win32 {
-}
-
-linux {
-    QMAKE_CXXFLAGS += "-Wno-old-style-cast"
-}
-
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
