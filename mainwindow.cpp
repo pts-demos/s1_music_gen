@@ -26,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	} else {
 		endianess = BigEndian;
 	}
+
+	voices.push_back(Smps_voice());
 }
 
 MainWindow::~MainWindow()
@@ -35,7 +37,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::toHostEndian(int16_t* data) {
 	if (endianess == LittleEndian) {
-		int16_t x = (*data >> 8) | ( *data << 8);
+		int16_t x = (int16_t)((*data >> 8) | ( *data << 8));
 		*data = x;
 	}
 }
@@ -51,7 +53,7 @@ void MainWindow::toHostEndian(uint16_t* data) {
 
 void MainWindow::toBigEndian(int16_t* data) {
 	if (endianess == LittleEndian) {
-		int16_t x = (*data >> 8) | ( *data << 8);
+		int16_t x = (int16_t)((*data >> 8) | ( *data << 8));
 		*data = x;
 	}
 }
@@ -67,7 +69,7 @@ void MainWindow::toBigEndian(uint16_t* data) {
 
 QString MainWindow::byteToHex(uint8_t t) {
 	QByteArray arr;
-	arr.append(t);
+	arr.append((char)t);
 	return arr.toHex();
 }
 
@@ -116,7 +118,7 @@ void MainWindow::update_ui_controls() {
 void MainWindow::on_voice_next_clicked()
 {
 	cur_voice++;
-	if (cur_voice >= FM_VOICES) {
+	if (cur_voice >= voices.size()) {
 		cur_voice = 0;
 	}
 
@@ -127,7 +129,29 @@ void MainWindow::on_voice_previous_clicked()
 {
 	cur_voice--;
 	if (cur_voice < 0) {
-		cur_voice = FM_VOICES-1;
+		cur_voice = (int)voices.size()-1;
+	}
+
+	update_ui_controls();
+}
+
+void MainWindow::on_voice_create_clicked()
+{
+	voices.push_back(Smps_voice());
+	cur_voice = (int)voices.size()-1;
+	update_ui_controls();
+}
+
+void MainWindow::on_voice_delete_clicked()
+{
+	if (voices.size() == 1) {
+		qDebug() << "cannot erase last FM voice";
+		return;
+	}
+
+	voices.erase(voices.begin() + cur_voice);
+	if (cur_voice >= (int)voices.size()) {
+		cur_voice = (int)voices.size()-1;
 	}
 
 	update_ui_controls();
@@ -392,19 +416,19 @@ void MainWindow::on_write_song_clicked()
 
 	for (int i = 0; i < fm_patterns.size(); i++) {
 		qDebug() << "fm pattern " << i << " size: " << fm_patterns[i].size();
-		patterns_length += fm_patterns[i].size();
+		patterns_length += (uint16_t)fm_patterns[i].size();
 	}
 
 	for (int i = 0; i < psg_patterns.size(); i++) {
 		qDebug() << "psg pattern " << i << " size: " << psg_patterns[i].size();
-		patterns_length += psg_patterns[i].size();
+		patterns_length += (uint16_t)psg_patterns[i].size();
 	}
 
 	// $0-$1: Voice table pointer, offset to where the FM synthesis data is located
 	// It starts immediately after last pattern data
 	uint16_t headers_size = smps_header_size +
-		fm_patterns.size()*fm_channel_header_size +
-		psg_patterns.size()*psg_header_size;
+		(uint16_t)fm_patterns.size()*fm_channel_header_size +
+		(uint16_t)psg_patterns.size()*psg_header_size;
 
 	uint16_t vac_t_offset = headers_size + patterns_length;
 	toBigEndian(&vac_t_offset);
@@ -428,7 +452,7 @@ void MainWindow::on_write_song_clicked()
 	 * Sonic 3 or K specific: a dividing timing of $00 multiplies the note duration by 256, making all notes have a duration of $00
 	 * and last for 256 frames.
 	 */
-	smps_header[4] = 1;
+	smps_header[4] = (uint8_t)ui->song_dividing_timing->value();
 
 	/*
 	 * Main tempo modifier. From sonicretro.org:
@@ -438,7 +462,7 @@ void MainWindow::on_write_song_clicked()
 	 * spaced as possible. A main tempo of $00 does not run at all. Sonic 3 or K specific: a main tempo of nn runs on (256 - nn) out
 	 * of 256 frames, as evenly spaced as possible. All tempo values are valid.
 	 */
-	smps_header[5] = 6;
+	smps_header[5] = (uint8_t)ui->song_tempo->value();
 
 	fout.write(smps_header, smps_header_size);
 	delete[] smps_header;
@@ -451,6 +475,7 @@ void MainWindow::on_write_song_clicked()
 	uint16_t pattern_offset = 0;
 
 	for (unsigned int i = 0; i < fm_patterns.size(); i++) {
+		qDebug() << "Writing FM channel " << i;
 		uint8_t* off_p = (uint8_t*)&fm_headers[i * fm_channel_header_size];
 
 		// Track data pointer
@@ -460,7 +485,7 @@ void MainWindow::on_write_song_clicked()
 		uint16_t track_data_ptr = headers_size + pattern_offset;
 		toBigEndian(&track_data_ptr);
 		write_track_data_addr[0] = track_data_ptr;
-		pattern_offset += fm_patterns[i].size();
+		pattern_offset += (uint16_t)fm_patterns[i].size();
 
 		uint8_t key_disp = 0;
 		uint8_t vol_att = 0;
@@ -512,13 +537,14 @@ void MainWindow::on_write_song_clicked()
 	memset(psg_headers, 0, psg_header_size * psg_patterns.size());
 
 	for (unsigned int i = 0; i < psg_patterns.size(); i++) {
+		qDebug() << "writing PSG channel " << i;
 		uint8_t* psg_ptr = (uint8_t*)&psg_headers[i * psg_header_size];
 		uint16_t* track_d_ptr = (uint16_t*)psg_ptr;
 
 		uint16_t track_d_ptr_val = headers_size + pattern_offset;
 		toBigEndian(&track_d_ptr_val);
 		track_d_ptr[0] = track_d_ptr_val;
-		pattern_offset += psg_patterns[i].size();
+		pattern_offset += (uint16_t)psg_patterns[i].size();
 
 		uint8_t key_disp = 0;
 		uint8_t vol_att = 0;
@@ -577,13 +603,14 @@ void MainWindow::on_write_song_clicked()
 
 	// Write voice table
 	const int voice_size = 25;
-	unsigned int voice_table_size = FM_VOICES * voice_size;
+	unsigned int voice_table_size = (unsigned int)voices.size() * voice_size;
 	char* fm_table_data = new char[voice_table_size];
 	memset(fm_table_data, 0, voice_table_size);
+	qDebug() << "writing " << voice_table_size << " bytes of voices";
 
 	// Write all FM voices into a buffer
 	// https://segaretro.org/SMPS/Voices_and_samples
-	for (unsigned int i = 0; i < FM_VOICES; i++) {
+	for (unsigned int i = 0; i < voices.size(); i++) {
 		Smps_voice& v = voices[i];
 
 		uint8_t* ptr = (uint8_t*)&fm_table_data[i * voice_size];
@@ -661,6 +688,8 @@ void MainWindow::on_import_button_clicked()
 		return;
 	}
 
+	qint64 fsize = finfo.size();
+
 	settings.setValue("prev_import_path", fpath);
 
 	ui->fm_channel_1->clear();
@@ -708,11 +737,14 @@ void MainWindow::on_import_button_clicked()
 	memcpy(&main_tempo, &rawbuf[5], sizeof(uint8_t));
 
 	qDebug() << "dividing timing: " << dividing_timing << ", main tempo: " << main_tempo;
+	ui->song_dividing_timing->setValue(dividing_timing);
+	ui->song_tempo->setValue(main_tempo);
 
 	std::vector<PatternHeader> pattern_headers;
 	int offset = 6;
 
 	for (int i = 0; i < num_of_fm_channels; i++) {
+		qDebug() << "reading FM channel " << i << " header";
 		PatternHeader pattern_header;
 		memset(&pattern_header, 0, sizeof(pattern_header));
 
@@ -720,7 +752,7 @@ void MainWindow::on_import_button_clicked()
 		memcpy((char*)&pattern_data_ptr, &rawbuf[offset], sizeof(uint16_t));
 		toHostEndian(&pattern_data_ptr);
 		pattern_header.pattern_offset = pattern_data_ptr;
-		pattern_header.pattern_number = i;
+		pattern_header.pattern_number = (int8_t)i;
 		qDebug() << "FM channel " << i << " offset: " << pattern_header.pattern_offset;
 
 		bool is_dac = false;
@@ -782,6 +814,7 @@ void MainWindow::on_import_button_clicked()
 	}
 
 	for (int i = 0; i < num_of_psg_channels; i++) {
+		qDebug() << "reading PSG channel " << i << " header";
 		PatternHeader pattern_header;
 		memset(&pattern_header, 0, sizeof(pattern_header));
 
@@ -837,7 +870,7 @@ void MainWindow::on_import_button_clicked()
 		}
 	);
 
-	for (int i = 0; i < pattern_headers.size()-1; i++) {
+	for (int i = 0; i < (int)pattern_headers.size()-1; i++) {
 		pattern_headers[i].pattern_size = pattern_headers[i+1].pattern_offset - pattern_headers[i].pattern_offset;
 	}
 
@@ -858,7 +891,7 @@ void MainWindow::on_import_button_clicked()
 
 	qDebug() << "There are a total of " << pattern_headers.size() << " pattern headers";
 
-	for (int i = 0; i < pattern_headers.size(); i++) {
+	for (int i = 0; i < (int)pattern_headers.size(); i++) {
 		QString chantype = pattern_headers[i].voice_type == SMPS_PSG ? "PSG" : "FM or DAC";
 		qDebug() << "pattern header " << i << " type: " << chantype << ", offset: " << pattern_headers[i].pattern_offset << " length: " << pattern_headers[i].pattern_size;
 	}
@@ -868,7 +901,7 @@ void MainWindow::on_import_button_clicked()
 
 	// read pattern data
 
-	for (int i = 0; i < pattern_headers.size(); i++) {
+	for (int i = 0; i < (int)pattern_headers.size(); i++) {
 		PatternHeader& p = pattern_headers[i];
 
 		QString pattern_text = "";
@@ -909,7 +942,22 @@ void MainWindow::on_import_button_clicked()
 	// read FM voice table data
 	const int voice_size = 25;
 
-	for (int i = 0; i < FM_VOICES; i++) {
+	size_t table_size = fsize - fm_voice_array_ptr;
+	qDebug() << "table size: " << table_size;
+	qDebug() << "divided into 25 bytes:" << table_size / 25.0f;
+	uint16_t voices_to_read = (uint16_t)table_size / 25;
+	int out_of_bounds = fsize - (int)(fm_voice_array_ptr + table_size);
+	if (out_of_bounds != 0) {
+		qDebug() << "error: After reading FM voice table, file read pointer is "
+			<< out_of_bounds << " bytes from the file end. Something is not read correctly";
+	}
+
+	voices.clear();
+	cur_voice = 0;
+
+	for (int i = 0; i < voices_to_read; i++) {
+		voices.push_back(Smps_voice());
+
 		uint8_t b1 = (uint8_t)rawbuf[fm_voice_array_ptr + (i*voice_size)];
 
 		// 00111000

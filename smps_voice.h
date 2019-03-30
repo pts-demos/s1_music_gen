@@ -16,6 +16,7 @@ public:
 	Smps_voice();
 
 	void writeInFile(QFile& f);
+	void reset();
 
 	VoiceType voice_type;
 

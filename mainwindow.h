@@ -4,8 +4,6 @@
 #include <QMainWindow>
 #include "smps_voice.h"
 
-#define FM_VOICES 6
-
 typedef enum {
 	LittleEndian = 0,
 	BigEndian = 1
@@ -47,7 +45,7 @@ public:
 	QString byteToHex(uint8_t);
 
 private:
-	Smps_voice voices[FM_VOICES];
+	std::vector<Smps_voice> voices;
 	int cur_voice;
 	HostEndianess endianess;
 
@@ -98,6 +96,9 @@ private slots:
 	void on_voice_coarse_frequency_mult_op3_valueChanged(int arg1);
 	void on_voice_coarse_frequency_mult_op4_valueChanged(int arg1);
 	void on_import_button_clicked();
+	void on_voice_create_clicked();
+
+	void on_voice_delete_clicked();
 
 private:
 	Ui::MainWindow *ui;

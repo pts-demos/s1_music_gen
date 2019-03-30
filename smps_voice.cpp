@@ -3,6 +3,11 @@
 
 Smps_voice::Smps_voice()
 {
+	voice_type = SMPS_FM;
+	reset();
+}
+
+void Smps_voice::reset() {
 	feedback = 0;
 	algorithm = 0;
 	detune_op1 = 0;
@@ -45,7 +50,6 @@ Smps_voice::Smps_voice()
 	total_level_op2 = 0;
 	total_level_op3 = 0;
 	total_level_op4 = 0;
-	voice_type = SMPS_FM;
 }
 
 void Smps_voice::writeInFile(QFile &f)

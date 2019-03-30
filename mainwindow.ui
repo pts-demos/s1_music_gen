@@ -34,16 +34,16 @@
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>10</y>
+        <y>0</y>
         <width>971</width>
-        <height>61</height>
+        <height>71</height>
        </rect>
       </property>
       <widget class="QPushButton" name="voice_previous">
        <property name="geometry">
         <rect>
          <x>190</x>
-         <y>20</y>
+         <y>10</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -69,7 +69,7 @@
        <property name="geometry">
         <rect>
          <x>270</x>
-         <y>20</y>
+         <y>10</y>
          <width>75</width>
          <height>23</height>
         </rect>
@@ -102,6 +102,84 @@
        </property>
        <property name="text">
         <string>Load</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="song_dividing_timing">
+       <property name="geometry">
+        <rect>
+         <x>510</x>
+         <y>10</y>
+         <width>42</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_35">
+       <property name="geometry">
+        <rect>
+         <x>560</x>
+         <y>10</y>
+         <width>71</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Dividing timing</string>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="song_tempo">
+       <property name="geometry">
+        <rect>
+         <x>510</x>
+         <y>40</y>
+         <width>42</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="value">
+        <number>6</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_36">
+       <property name="geometry">
+        <rect>
+         <x>560</x>
+         <y>40</y>
+         <width>47</width>
+         <height>13</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Tempo</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="voice_create">
+       <property name="geometry">
+        <rect>
+         <x>190</x>
+         <y>40</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>New</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="voice_delete">
+       <property name="geometry">
+        <rect>
+         <x>270</x>
+         <y>40</y>
+         <width>75</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Delete</string>
        </property>
       </widget>
      </widget>
