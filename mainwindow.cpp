@@ -592,7 +592,7 @@ void MainWindow::on_write_song_clicked()
 		psg_ptr[4] = 0;
 
 		// Default PSG tone (index in lookup table)
-		psg_ptr[5] = key_disp;
+		psg_ptr[5] = tone;
 	}
 
 	fout.write((char*)psg_headers, psg_header_size * psg_patterns.size());
@@ -985,6 +985,11 @@ void MainWindow::on_import_button_clicked()
 		if (target == NULL) {
 			qDebug() << "Did not find pattern to edit: " << p.voice_type << ", " << p.pattern_number;
 			continue;
+		}
+
+		if (p.voice_type == SMPS_DAC && pattern_text.size() == 0) {
+			// If DAC channel is not used, it must begin with an $F2
+			pattern_text += "F2";
 		}
 
 		target->setText(pattern_text);
