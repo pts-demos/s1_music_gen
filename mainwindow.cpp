@@ -378,7 +378,7 @@ void MainWindow::on_write_song_clicked()
 	QSettings settings;
 	QString def_path = settings.value("prev_save_path", QCoreApplication::applicationDirPath()).toString();
 
-	QString fpath = QFileDialog::getSaveFileName(this, "Save file", def_path, ".bin");
+	QString fpath = QFileDialog::getSaveFileName(this, "Save file", def_path, "Binary files (*.bin)");
 	if (fpath.length() == 0)
 		return;
 
