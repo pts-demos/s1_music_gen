@@ -26,7 +26,12 @@ void PatternEditBox::handleTextChanged()
 	}
 
 	if (text.compare(modded_text) != 0) {
+		// Keep cursor position after modifying text
+		int pos = textCursor().position();
 		setText(modded_text);
+		QTextCursor cursor = textCursor();
+		cursor.setPosition(pos);
+		setTextCursor(cursor);
 	}
 }
 
