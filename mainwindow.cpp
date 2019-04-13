@@ -6,6 +6,12 @@
 #include <QDebug>
 #include <QByteArray>
 
+#ifdef WIN32
+#include <WinSock2.h>
+#else
+#include <arpa/inet.h>
+#endif
+
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
@@ -36,35 +42,35 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::toHostEndian(int16_t* data) {
-	if (endianess == LittleEndian) {
-		int16_t x = (int16_t)((*data >> 8) | ( *data << 8));
-		*data = x;
-	}
+#ifdef WIN32
+	*data = ntohs(*data);
+#else
+	*data = ntohs(*data);
+#endif
 }
 
 void MainWindow::toHostEndian(uint16_t* data) {
-	// Cast to int32 to avoid left shifting unsigned ints
-	int32_t temp = *data;
-	if (endianess == LittleEndian) {
-		int32_t temp2 = (temp >> 8) | ( temp << 8);
-		*data = (uint16_t)temp2;
-	}
+#ifdef WIN32
+	*data = ntohs(*data);
+#else
+	*data = ntohs(*data);
+#endif
 }
 
 void MainWindow::toBigEndian(int16_t* data) {
-	if (endianess == LittleEndian) {
-		int16_t x = (int16_t)((*data >> 8) | ( *data << 8));
-		*data = x;
-	}
+#ifdef WIN32
+	*data = htons(*data);
+#else
+	*data = htons(*data);
+#endif
 }
 
 void MainWindow::toBigEndian(uint16_t* data) {
-	// cast to int32 to avoid left shifting unsigned ints
-	int32_t temp = *data;
-	if (endianess == LittleEndian) {
-		int32_t temp2 = (temp >> 8) | (temp << 8);
-		*data = (uint16_t)temp2;
-	}
+#ifdef WIN32
+	*data = htons(*data);
+#else
+	*data = htons(*data);
+#endif
 }
 
 QString MainWindow::byteToHex(uint8_t t) {
@@ -650,12 +656,44 @@ void MainWindow::on_write_song_clicked()
 		ptr[0] = (v.feedback << 3) + v.algorithm;
 
 		// $1-$4: -XXXYYYY where
-		//	XXX is Detune of operator n
-		//	YYYY is coarse-frequency multiplier of operator n
-		ptr[1] = (v.detune_op1 << 4) + v.coarse_frequency_multiplier_op1;
-		ptr[2] = (v.detune_op3 << 4) + v.coarse_frequency_multiplier_op3;
-		ptr[3] = (v.detune_op2 << 4) + v.coarse_frequency_multiplier_op2;
-		ptr[4] = (v.detune_op4 << 4) + v.coarse_frequency_multiplier_op4;
+		//	XXX is Detune of operator n (signed int)
+		//	YYYY is coarse-frequency multiplier of operator n (unsigned int)
+
+		// store original sign
+		int8_t sign1 = v.detune_op1 < 0 ? -1 : 1;
+		int8_t sign3 = v.detune_op3 < 0 ? -1 : 1;
+		int8_t sign2 = v.detune_op2 < 0 ? -1 : 1;
+		int8_t sign4 = v.detune_op4 < 0 ? -1 : 1;
+
+		// convert to positive
+		uint32_t detune_op1 = (uint32_t)(v.detune_op1*sign1);
+		uint32_t detune_op3 = (uint32_t)(v.detune_op3*sign3);
+		uint32_t detune_op2 = (uint32_t)(v.detune_op2*sign2);
+		uint32_t detune_op4 = (uint32_t)(v.detune_op4*sign4);
+
+		// move to higher 4 bits
+		detune_op1 = detune_op1 << 4;
+		detune_op3 = detune_op3 << 4;
+		detune_op2 = detune_op2 << 4;
+		detune_op4 = detune_op4 << 4;
+
+		// Pack coarse frequency multiplier into the lower 4 bits (it's unsigned)
+		detune_op1 += v.coarse_frequency_multiplier_op1;
+		detune_op3 += v.coarse_frequency_multiplier_op3;
+		detune_op2 += v.coarse_frequency_multiplier_op2;
+		detune_op4 += v.coarse_frequency_multiplier_op4;
+
+		// assign sign to first bit
+		if (sign1 == -1) detune_op1 = detune_op1 | 0x80;
+		if (sign3 == -1) detune_op3 = detune_op3 | 0x80;
+		if (sign2 == -1) detune_op2 = detune_op2 | 0x80;
+		if (sign4 == -1) detune_op4 = detune_op4 | 0x80;
+
+		// write data
+		ptr[1] = detune_op1;
+		ptr[2] = detune_op3;
+		ptr[3] = detune_op2;
+		ptr[4] = detune_op4;
 
 		// $5-$8: XX-YYYYY where
 		//	XX is rate scaling of operator n
@@ -840,6 +878,12 @@ void MainWindow::on_import_button_clicked()
 		case 5:
 			target_key = ui->fm_chan6_key_displacement;
 			target_att = ui->fm_chan6_volume_attenuation;
+			break;
+		default:
+			// Some songs, such as the chaos emerald song, make use of 7
+			// fm channels, but there's something odd about that. investigate later.
+			qDebug() << "Unsupported channel index: " << i;
+			continue;
 			break;
 		}
 
@@ -1044,11 +1088,42 @@ void MainWindow::on_import_button_clicked()
 		uint8_t b4 = (uint8_t)read_ptr[3];
 		uint8_t b5 = (uint8_t)read_ptr[4];
 
-		// 01110000
-		uint8_t op1_detune = b2 >> 4;
-		uint8_t op3_detune = b3 >> 4;
-		uint8_t op2_detune = b4 >> 4;
-		uint8_t op4_detune = b5 >> 4;
+		// s1110000
+		uint8_t op1_detune_us = (b2 >> 4);
+		uint8_t op3_detune_us = (b3 >> 4);
+		uint8_t op2_detune_us = (b4 >> 4);
+		uint8_t op4_detune_us = (b5 >> 4);
+
+		int8_t op1_detune = 0;
+		int8_t op3_detune = 0;
+		int8_t op2_detune = 0;
+		int8_t op4_detune = 0;
+
+		std::memcpy(&op1_detune, &op1_detune_us, sizeof(uint8_t));
+		std::memcpy(&op3_detune, &op3_detune_us, sizeof(uint8_t));
+		std::memcpy(&op2_detune, &op2_detune_us, sizeof(uint8_t));
+		std::memcpy(&op4_detune, &op4_detune_us, sizeof(uint8_t));
+
+		// restore sign
+		if (op1_detune_us >= 8) {
+			op1_detune = op1_detune & 0x07;
+			op1_detune *= -1;
+		}
+
+		if (op3_detune_us >= 8) {
+			op3_detune = op3_detune & 0x07;
+			op3_detune *= -1;
+		}
+
+		if (op2_detune_us >= 8) {
+			op2_detune = op2_detune & 0x07;
+			op2_detune *= -1;
+		}
+
+		if (op4_detune_us >= 8) {
+			op4_detune = op4_detune & 0x07;
+			op4_detune *= -1;
+		}
 
 		// 00001111
 		uint8_t op1_mult = 0x0F & b2;

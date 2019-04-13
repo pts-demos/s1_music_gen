@@ -25,6 +25,11 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+win32 {
+    # for winsock2.h network endianess conversions
+    LIBS += -lWs2_32
+}
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
