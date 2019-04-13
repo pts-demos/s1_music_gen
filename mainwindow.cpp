@@ -683,11 +683,27 @@ void MainWindow::on_write_song_clicked()
 		detune_op2 += v.coarse_frequency_multiplier_op2;
 		detune_op4 += v.coarse_frequency_multiplier_op4;
 
-		// assign sign to first bit
-		if (sign1 == -1) detune_op1 = detune_op1 | 0x80;
-		if (sign3 == -1) detune_op3 = detune_op3 | 0x80;
-		if (sign2 == -1) detune_op2 = detune_op2 | 0x80;
-		if (sign4 == -1) detune_op4 = detune_op4 | 0x80;
+		if (sign1 == -1) {
+			// reset 1st bit to remove sign there as it's unused
+			detune_op1 = detune_op1 & 0x7F;
+			// and assign the sign to 2nd bit
+			detune_op1 = detune_op1 | 0x40;
+		}
+
+		if (sign3 == -1) {
+			detune_op3 = detune_op3 & 0x7F;
+			detune_op3 = detune_op3 | 0x40;
+		}
+
+		if (sign2 == -1) {
+			detune_op2 = detune_op2 & 0x7F;
+			detune_op2 = detune_op2 | 0x40;
+		}
+
+		if (sign4 == -1) {
+			detune_op4 = detune_op4 & 0x7F;
+			detune_op4 = detune_op4 | 0x40;
+		}
 
 		// write data
 		ptr[1] = detune_op1;
@@ -1088,7 +1104,7 @@ void MainWindow::on_import_button_clicked()
 		uint8_t b4 = (uint8_t)read_ptr[3];
 		uint8_t b5 = (uint8_t)read_ptr[4];
 
-		// s1110000
+		// -s110000
 		uint8_t op1_detune_us = (b2 >> 4);
 		uint8_t op3_detune_us = (b3 >> 4);
 		uint8_t op2_detune_us = (b4 >> 4);
@@ -1104,24 +1120,24 @@ void MainWindow::on_import_button_clicked()
 		std::memcpy(&op2_detune, &op2_detune_us, sizeof(uint8_t));
 		std::memcpy(&op4_detune, &op4_detune_us, sizeof(uint8_t));
 
-		// restore sign
-		if (op1_detune_us >= 8) {
-			op1_detune = op1_detune & 0x07;
+		// restore sign by ANDing all but two LSB to zero, then multiply
+		if (op1_detune_us >= 4) {
+			op1_detune = op1_detune & 0x03;
 			op1_detune *= -1;
 		}
 
-		if (op3_detune_us >= 8) {
-			op3_detune = op3_detune & 0x07;
+		if (op3_detune_us >= 4) {
+			op3_detune = op3_detune & 0x03;
 			op3_detune *= -1;
 		}
 
-		if (op2_detune_us >= 8) {
-			op2_detune = op2_detune & 0x07;
+		if (op2_detune_us >= 4) {
+			op2_detune = op2_detune & 0x03;
 			op2_detune *= -1;
 		}
 
-		if (op4_detune_us >= 8) {
-			op4_detune = op4_detune & 0x07;
+		if (op4_detune_us >= 4) {
+			op4_detune = op4_detune & 0x03;
 			op4_detune *= -1;
 		}
 
