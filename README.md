@@ -38,7 +38,3 @@ There are limitations as I haven't bothered coding full SMPS support
     * See the below image to see Deflemesk mappings into this tool. The unlinked controls aren't supported
     
 ![Deflemask mappings](./deflemask_mappings.png)
-
-### Known issues
-
-* Using negative detune values with some combination of other flags causes a highpitched BEEEEEP to be played. I don't know what I do wrong with the signed/unsigned conversions.
