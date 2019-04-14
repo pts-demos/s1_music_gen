@@ -33,8 +33,8 @@ There are limitations as I haven't bothered coding full SMPS support
 * Hex code meanings in the patterns are in the file [hex.md](./hex.md)
 * The FM voice parameters are complicated to use unless you are familiar with FM synthesis (I'm not). I recommend using [Deflemask](http://deflemask.com/) for creating instruments and then copying the instrument settings into this tool. However, since SMPS formats differ, there a few caveats:
     * Deflemask uses the format where operators are ordered 1,2,3,4 while Sonic 1 SMPS uses 1,3,2,4. So when copying FM voice settings from Deflemask into this tool, flip operators 2 and 3.
-    * Currently detune can only be positive
-    * I don't know what the FMS and AMS settings in Deflemask are
+    * The FMS setting does a vibrato, which is currently not supported
+	* AMS setting is not supported (not sure what this is)
     * See the below image to see Deflemesk mappings into this tool. The unlinked controls aren't supported
     
 ![Deflemask mappings](./deflemask_mappings.png)
