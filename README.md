@@ -13,10 +13,10 @@ Sonic 1 stores its music in a format which has been labeled by romhackers as "SM
 * FM voice synthesis table data
 
 Details about the format can be found in the following places:
-    * https://segaretro.org/SMPS/Headers
-    * https://segaretro.org/SMPS/Voices_and_samples
-    * http://info.sonicretro.org/SCHG:Music_Hacking/Pointer_and_Header_Format
-    * http://info.sonicretro.org/SCHG:Music_Hacking/Voice_and_Note_Editing
+* https://segaretro.org/SMPS/Headers
+* https://segaretro.org/SMPS/Voices_and_samples
+* http://info.sonicretro.org/SCHG:Music_Hacking/Pointer_and_Header_Format
+* http://info.sonicretro.org/SCHG:Music_Hacking/Voice_and_Note_Editing
     
 ### Compiling
 
