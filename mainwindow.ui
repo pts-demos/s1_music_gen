@@ -1162,36 +1162,40 @@
   <tabstop>voice_total_level_op2</tabstop>
   <tabstop>voice_total_level_op3</tabstop>
   <tabstop>voice_total_level_op4</tabstop>
-  <tabstop>fm_chan3_key_displacement</tabstop>
-  <tabstop>fm_chan3_volume_attenuation</tabstop>
-  <tabstop>fm_channel_3</tabstop>
-  <tabstop>fm_chan6_key_displacement</tabstop>
-  <tabstop>psg_chan1_key_displacement</tabstop>
-  <tabstop>psg_chan3_volume_attenuation</tabstop>
-  <tabstop>fm_chan5_volume_attenuation</tabstop>
-  <tabstop>psg_chan2_volume_attenuation</tabstop>
-  <tabstop>psg_channel_2</tabstop>
+  <tabstop>voice_lfo_enabled_op1</tabstop>
+  <tabstop>voice_lfo_enabled_op2</tabstop>
+  <tabstop>voice_lfo_enabled_op3</tabstop>
+  <tabstop>voice_lfo_enabled_op4</tabstop>
   <tabstop>fm_chan1_key_displacement</tabstop>
-  <tabstop>fm_chan5_key_displacement</tabstop>
-  <tabstop>psg_chan3_key_displacement</tabstop>
-  <tabstop>fm_channel_4</tabstop>
-  <tabstop>fm_channel_5</tabstop>
-  <tabstop>psg_chan2_tone</tabstop>
-  <tabstop>fm_channel_6</tabstop>
   <tabstop>fm_chan1_volume_attenuation</tabstop>
-  <tabstop>fm_channel_1</tabstop>
-  <tabstop>fm_channel_2</tabstop>
-  <tabstop>fm_chan6_volume_attenuation</tabstop>
-  <tabstop>psg_chan3_tone</tabstop>
-  <tabstop>psg_chan1_tone</tabstop>
-  <tabstop>fm_chan4_key_displacement</tabstop>
-  <tabstop>psg_channel_1</tabstop>
-  <tabstop>psg_channel_3</tabstop>
-  <tabstop>psg_chan1_volume_attenuation</tabstop>
-  <tabstop>fm_chan4_volume_attenuation</tabstop>
   <tabstop>fm_chan2_key_displacement</tabstop>
   <tabstop>fm_chan2_volume_attenuation</tabstop>
+  <tabstop>fm_chan3_key_displacement</tabstop>
+  <tabstop>fm_chan3_volume_attenuation</tabstop>
+  <tabstop>fm_chan4_key_displacement</tabstop>
+  <tabstop>fm_chan4_volume_attenuation</tabstop>
+  <tabstop>fm_chan5_key_displacement</tabstop>
+  <tabstop>fm_chan5_volume_attenuation</tabstop>
+  <tabstop>fm_chan6_key_displacement</tabstop>
+  <tabstop>fm_chan6_volume_attenuation</tabstop>
+  <tabstop>psg_chan1_key_displacement</tabstop>
+  <tabstop>psg_chan1_volume_attenuation</tabstop>
+  <tabstop>psg_chan1_tone</tabstop>
   <tabstop>psg_chan2_key_displacement</tabstop>
+  <tabstop>psg_chan2_volume_attenuation</tabstop>
+  <tabstop>psg_chan2_tone</tabstop>
+  <tabstop>psg_chan3_key_displacement</tabstop>
+  <tabstop>psg_chan3_volume_attenuation</tabstop>
+  <tabstop>psg_chan3_tone</tabstop>
+  <tabstop>fm_channel_1</tabstop>
+  <tabstop>fm_channel_2</tabstop>
+  <tabstop>fm_channel_3</tabstop>
+  <tabstop>fm_channel_4</tabstop>
+  <tabstop>fm_channel_5</tabstop>
+  <tabstop>fm_channel_6</tabstop>
+  <tabstop>psg_channel_1</tabstop>
+  <tabstop>psg_channel_2</tabstop>
+  <tabstop>psg_channel_3</tabstop>
  </tabstops>
  <resources/>
  <connections/>
