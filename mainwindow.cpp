@@ -42,35 +42,19 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::toHostEndian(int16_t* data) {
-#ifdef WIN32
 	*data = ntohs(*data);
-#else
-	*data = ntohs(*data);
-#endif
 }
 
 void MainWindow::toHostEndian(uint16_t* data) {
-#ifdef WIN32
 	*data = ntohs(*data);
-#else
-	*data = ntohs(*data);
-#endif
 }
 
 void MainWindow::toBigEndian(int16_t* data) {
-#ifdef WIN32
 	*data = htons(*data);
-#else
-	*data = htons(*data);
-#endif
 }
 
 void MainWindow::toBigEndian(uint16_t* data) {
-#ifdef WIN32
 	*data = htons(*data);
-#else
-	*data = htons(*data);
-#endif
 }
 
 QString MainWindow::byteToHex(uint8_t t) {
