@@ -5,6 +5,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QByteArray>
+#include <cstring>
 
 #ifdef WIN32
 #include <WinSock2.h>
@@ -112,7 +113,7 @@ void MainWindow::update_ui_controls() {
 void MainWindow::on_voice_next_clicked()
 {
 	cur_voice++;
-	if (cur_voice >= voices.size()) {
+	if (cur_voice >= (int)voices.size()) {
 		cur_voice = 0;
 	}
 
@@ -364,7 +365,6 @@ void MainWindow::on_voice_coarse_frequency_mult_op4_valueChanged(int arg1)
 void MainWindow::on_write_song_clicked()
 {
 	// https://segaretro.org/SMPS/Headers
-
 	QSettings settings;
 	QString def_path = settings.value("prev_save_path", QCoreApplication::applicationDirPath()).toString();
 
@@ -408,17 +408,17 @@ void MainWindow::on_write_song_clicked()
 	// Solve how much space pattern data requires
 	uint16_t patterns_length = 0;
 
-	for (int i = 0; i < fm_patterns.size(); i++) {
+	for (int i = 0; i < (int)fm_patterns.size(); i++) {
 		qDebug() << "fm pattern " << i << " size: " << fm_patterns[i].size();
 		patterns_length += (uint16_t)fm_patterns[i].size();
 	}
 
-	for (int i = 0; i < psg_patterns.size(); i++) {
+	for (int i = 0; i < (int)psg_patterns.size(); i++) {
 		qDebug() << "psg pattern " << i << " size: " << psg_patterns[i].size();
 		patterns_length += (uint16_t)psg_patterns[i].size();
 	}
 
-	// $0-$1: Voice table pointer, offset to where the FM synthesis data is located
+	// $00-$01: Voice table pointer, offset to where the FM synthesis data is located
 	// It starts immediately after last pattern data
 	uint16_t headers_size = smps_header_size +
 		(uint16_t)fm_patterns.size()*fm_channel_header_size +
@@ -429,19 +429,21 @@ void MainWindow::on_write_song_clicked()
 	uint16_t* smps_ptr_1 = (uint16_t*)smps_header;
 	smps_ptr_1[0] = vac_t_offset;
 
-	// Number of FM+DAC channels
-	//
-	// From sonicretro:
-	// Number of FM+DAC channels. There must always be a DAC channel defined, so this
-	// is number of FM channels + 1, and the DAC channel MUST be the first one. If
-	// you don't want to use the DAC, you must put a $F2 right at the start of the track.
-	// Sonic 1 or 2 specific: There is enough track RAM for 6 FM+1 DAC. If you want to
-	// use 6 FM channels, you must put a $07 in this byte to initialize all tracks and
-	// disable the DAC as above. The DAC channel will be disabled in this case.
-	// There is one song (the song that plays when you get a chaos emerald song)
-	// that initializes 6 FM+1 DAC as above — and it works only by luck, as the
-	// FM6 track is treated as a PSG channel and the PSG3 track is treated as an
-	// FM channel with its own voice pointer.
+	/*
+	 * Number of FM+DAC channels
+	 *
+	 * From sonicretro:
+	 * Number of FM+DAC channels. There must always be a DAC channel defined, so this
+	 * is number of FM channels + 1, and the DAC channel MUST be the first one. If
+	 * you don't want to use the DAC, you must put a $F2 right at the start of the track.
+	 * Sonic 1 or 2 specific: There is enough track RAM for 6 FM+1 DAC. If you want to
+	 * use 6 FM channels, you must put a $07 in this byte to initialize all tracks and
+	 * disable the DAC as above. The DAC channel will be disabled in this case.
+	 * There is one song (the song that plays when you get a chaos emerald song)
+	 * that initializes 6 FM+1 DAC as above — and it works only by luck, as the
+	 * FM6 track is treated as a PSG channel and the PSG3 track is treated as an
+	 * FM channel with its own voice pointer.
+	 */
 	smps_header[2] = (uint8_t)(fm_patterns.size());
 
 	// Number of PSG tracks
@@ -452,18 +454,16 @@ void MainWindow::on_write_song_clicked()
 	 * Dividing timing: in all drivers I analyzed (Sonic 1, Sonic 2, Sonic 3, Sonic & Knuckles, Sonic 3D Blast, Ristar, Outrunners)
 	 * this works by multiplying note duration by this value. This can lead to broken notes, as the final duration is stored in a
 	 * single byte; thus, the maximum note duration you can use without problems is $FF/dividing timing (round down, maximum of $7F).
-	 * Sonic 3 or K specific: a dividing timing of $00 multiplies the note duration by 256, making all notes have a duration of $00
-	 * and last for 256 frames.
+	 *	* Sonic 3 or K specific: a dividing timing of $00 multiplies the note duration by 256, making all notes have a duration of $00 and last for 256 frames.
 	 */
 	smps_header[4] = (uint8_t)ui->song_dividing_timing->value();
 
 	/*
 	 * Main tempo modifier. From sonicretro.org:
-	 * Main tempo modifier. This works as follows: Sonic 1 specific: if main tempo is nn, the song runs for nn-1 frames and is delayed
-	 * by 1 frame. A main tempo of $01 runs for 0 frames and is delayed by 1 frame, hence is broken; a main tempo of $00 will overflow
-	 * and run for $FF frames and be delayed by 1 frame. Sonic 2 specific: a main tempo of nn runs on nn out of 256 frames, as evenly
-	 * spaced as possible. A main tempo of $00 does not run at all. Sonic 3 or K specific: a main tempo of nn runs on (256 - nn) out
-	 * of 256 frames, as evenly spaced as possible. All tempo values are valid.
+	 * This works as follows;
+	 *	* Sonic 1 specific: if main tempo is nn, the song runs for nn-1 frames and is delayed by 1 frame. A main tempo of $01 runs for 0 frames and is delayed by 1 frame, hence is broken; a main tempo of $00 will overflow and run for $FF frames and be delayed by 1 frame.
+	 *	* Sonic 2 specific: a main tempo of nn runs on nn out of 256 frames, as evenly spaced as possible. A main tempo of $00 does not run at all.
+	 *	* Sonic 3 or K specific: a main tempo of nn runs on (256 - nn) out of 256 frames, as evenly spaced as possible. All tempo values are valid.
 	 */
 	smps_header[5] = (uint8_t)ui->song_tempo->value();
 
@@ -520,15 +520,12 @@ void MainWindow::on_write_song_clicked()
 			break;
 		}
 
-		/*
-		 * Initial channel key displacement. From sonicretro.org
-		 * Initial channel key displacement (signed, ignored on DAC). This is added to the note before it is converted
-		 * to a frequency. Sonic 3 or K specific: In the alternate SMPS parsing mode, the channel key displacement is
-		 * added to the *frequency* instead.
-		 */
+		// From sonicretro.org:
+		// Initial channel key displacement (signed, ignored on DAC). This is added to the note before it is converted to a frequency.
+		// 	* Sonic 3 or K specific: In the alternate SMPS parsing mode, the channel key displacement is added to the *frequency* instead.
 		off_p[2] = key_disp;
 
-		// Initial track volume. 0 is max, 7F is total silence.
+		// Initial track volume. $00 is max, $7F is total silence.
 		off_p[3] = vol_att;
 	}
 
@@ -571,8 +568,8 @@ void MainWindow::on_write_song_clicked()
 			break;
 		}
 
-		// Initial channel key displacement. This is added to the note before it is
-		// converted to a frequency
+		// Initial channel key displacement.
+		// This is added to the note before it is converted to a frequency
 		psg_ptr[2] = key_disp;
 
 		// Initial track volume attenuation: $0 is max volume, $f is total silence
@@ -591,7 +588,7 @@ void MainWindow::on_write_song_clicked()
 	// Write pattern data
 	qint64 pattern_data_total_size = 0;
 
-	for (int i = 0; i < fm_patterns.size(); i++) {
+	for (int i = 0; i < (int)fm_patterns.size(); i++) {
 		std::vector<uint8_t>& pattern = fm_patterns[i];
 
 		qint64 pat_size = 0;
@@ -605,7 +602,7 @@ void MainWindow::on_write_song_clicked()
 		pattern_data_total_size += pat_size;
 	}
 
-	for (int i = 0; i < psg_patterns.size(); i++) {
+	for (int i = 0; i < (int)psg_patterns.size(); i++) {
 		std::vector<uint8_t>& pattern = psg_patterns[i];
 
 		qint64 pat_size = 0;
@@ -1014,7 +1011,7 @@ void MainWindow::on_import_button_clicked()
 			case 4: target = ui->fm_channel_5; break;
 			case 5: target = ui->fm_channel_6; break;
 			default:
-				qDebug() << "Too large FM channel number to read: " << p.pattern_number;
+				qDebug() << "Invalid FM channel number: " << p.pattern_number;
 			}
 		} else {
 			switch (p.pattern_number) {
@@ -1022,7 +1019,7 @@ void MainWindow::on_import_button_clicked()
 			case 1: target = ui->psg_channel_2; break;
 			case 2: target = ui->psg_channel_3; break;
 			default:
-				qDebug() << "Too large PSG channel number to read: " << p.pattern_number;
+				qDebug() << "Invalid PSG channel number: " << p.pattern_number;
 			}
 		}
 
@@ -1099,10 +1096,10 @@ void MainWindow::on_import_button_clicked()
 		int8_t op2_detune = 0;
 		int8_t op4_detune = 0;
 
-		std::memcpy(&op1_detune, &op1_detune_us, sizeof(uint8_t));
-		std::memcpy(&op3_detune, &op3_detune_us, sizeof(uint8_t));
-		std::memcpy(&op2_detune, &op2_detune_us, sizeof(uint8_t));
-		std::memcpy(&op4_detune, &op4_detune_us, sizeof(uint8_t));
+		std::memmove(&op1_detune, &op1_detune_us, sizeof(uint8_t));
+		std::memmove(&op3_detune, &op3_detune_us, sizeof(uint8_t));
+		std::memmove(&op2_detune, &op2_detune_us, sizeof(uint8_t));
+		std::memmove(&op4_detune, &op4_detune_us, sizeof(uint8_t));
 
 		// restore sign by ANDing all but two LSB to zero, then multiply
 		if (op1_detune_us >= 4) {
