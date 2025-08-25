@@ -55,7 +55,7 @@ void Smps_voice::reset() {
 void Smps_voice::writeInFile(QFile &f)
 {
 	if (!f.isOpen()) {
-		qDebug() << "Error: Cannot write smps voice in file: File is not open";
+		qDebug() << "Error: Cannot write SMPS voice in file - File is not open";
 		return;
 	}
 }

@@ -39,7 +39,7 @@ std::vector<uint8_t> PatternEditBox::getBytes() {
 	std::string text = toPlainText().toUpper().replace(" ", "").toStdString();
 	std::vector<uint8_t> out;
 
-	for (int i = 1; i < text.size(); i += 2) {
+	for (int i = 1; i < (int)text.size(); i += 2) {
 		std::stringstream ss;
 		ss << text.at(i-1) << text.at(i);
 		std::string one_hex = ss.str();
